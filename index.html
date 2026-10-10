@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="颜色比色挑战：每题三次猜测机会，调节 HSL 滑块还原目标颜色，记录最近几题准确率并可分享。" />
+  <title>颜色比色挑战 · 三次猜测</title>
+  <!-- ?v= 是手动版本号：改版后递增它，否则浏览器磁盘缓存会继续用旧 css/js -->
+  <link rel="stylesheet" href="./styles.css?v=3" />
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead__text">
+        <h1 class="masthead__title">颜色比色挑战</h1>
+        <p class="masthead__sub">三次猜测机会 · HSL 滑块还原目标色 · 成绩本地保存</p>
+      </div>
+      <p class="masthead__badge" id="levelBadge">难度 1</p>
+    </header>
+
+    <!-- 分享链接打开时的模式提示（题目模式 / 只读成绩模式） -->
+    <p class="banner" id="contextBanner" hidden></p>
+
+    <!-- 只读分享视图：?share=history 或 ?share=result 时显示，游戏区被隐藏 -->
+    <section class="share-view" id="shareView" hidden>
+      <div class="share-view__head">
+        <h2 class="share-view__title" id="shareTitle">最近成绩摘要</h2>
+        <button class="btn btn--ghost" id="btnExitShare" type="button">返回我自己的成绩</button>
+      </div>
+      <div class="share-view__body" id="shareBody"></div>
+      <p class="share-view__note">该链接为只读展示，不会写入或修改任何本地历史记录。</p>
+    </section>
+
+    <main class="layout" id="mainLayout">
+      <!-- ==================== 比色台 ==================== -->
+      <section class="panel panel--game" aria-labelledby="gameHeading">
+        <h2 class="panel__title" id="gameHeading">比色台</h2>
+
+        <div class="level-row">
+          <label class="level-row__label" for="difficultySelect">难度</label>
+          <select class="select" id="difficultySelect"></select>
+          <label class="check">
+            <input type="checkbox" id="autoDifficulty" />
+            <span>自动递增</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="revealTarget" />
+            <span>显示目标数值</span>
+          </label>
+          <span class="level-row__hint" id="levelHint"></span>
+        </div>
+
+        <!-- 目标色 + 当前猜测色 + 三个圆形猜测记录位：同一对比区域 -->
+        <div class="stage">
+          <div class="stage__pair">
+            <div class="swatch-box">
+              <div class="swatch swatch--target" id="targetSwatch" role="img" aria-label="目标颜色"></div>
+              <div class="swatch-box__meta">
+                <p class="swatch-box__name">目标色</p>
+                <p class="swatch-box__value" id="targetReadout"></p>
+              </div>
+            </div>
+            <div class="swatch-box">
+              <div class="swatch swatch--guess" id="guessSwatch" role="img" aria-label="当前猜测颜色"></div>
+              <div class="swatch-box__meta">
+                <p class="swatch-box__name">我的颜色</p>
+                <p class="swatch-box__value" id="guessReadout"></p>
+              </div>
+            </div>
+          </div>
+
+          <ol class="guesses" id="guessList" aria-label="三次猜测记录"></ol>
+          <p class="stage__note" id="stageNote">提交后，本次猜测会凝固成圆形色块；悬停 / 点击色块可回看它的 HSL 与 HSV。</p>
+        </div>
+
+        <!-- HSL 滑块 -->
+        <div class="sliders">
+          <div class="slider">
+            <div class="slider__head">
+              <label class="slider__label" for="rangeHue">色相 H</label>
+              <output class="slider__out" id="outHue" for="rangeHue">180°</output>
+            </div>
+            <input class="range range--hue" type="range" id="rangeHue" min="0" max="360" step="1" value="180" />
+            <div class="slider__scale"><span>0°</span><span>180°</span><span>360°</span></div>
+          </div>
+          <div class="slider">
+            <div class="slider__head">
+              <label class="slider__label" for="rangeSat">饱和度 S</label>
+              <output class="slider__out" id="outSat" for="rangeSat">50%</output>
+            </div>
+            <input class="range range--sat" type="range" id="rangeSat" min="0" max="100" step="1" value="50" />
+            <div class="slider__scale"><span>0% 灰</span><span>50%</span><span>100% 纯</span></div>
+          </div>
+          <div class="slider">
+            <div class="slider__head">
+              <label class="slider__label" for="rangeLight">明度 L</label>
+              <output class="slider__out" id="outLight" for="rangeLight">50%</output>
+            </div>
+            <input class="range range--light" type="range" id="rangeLight" min="0" max="100" step="1" value="50" />
+            <div class="slider__scale"><span>0% 黑</span><span>50%</span><span>100% 白</span></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="btnSubmit" type="button">
+            提交本次猜测<span class="btn__count" id="submitCount">1 / 3</span>
+          </button>
+          <button class="btn" id="btnReset" type="button">重置当前调整</button>
+          <button class="btn" id="btnNext" type="button">下一题</button>
+        </div>
+
+        <!-- 单次提交得分卡片 -->
+        <div class="card card--score" id="feedbackCard" hidden></div>
+        <!-- 三次用尽后的结算卡片 -->
+        <div class="card card--result" id="resultCard" hidden></div>
+
+        <!-- 分享 -->
+        <div class="share-row">
+          <label class="share-row__label" for="shareLink">分享链接</label>
+          <input class="share-row__input" id="shareLink" type="text" readonly spellcheck="false" />
+          <div class="share-row__btns">
+            <button class="btn btn--small" id="btnCopyLink" type="button">复制分享链接</button>
+            <button class="btn btn--small" id="btnCopyResult" type="button">分享本题成绩</button>
+          </div>
+        </div>
+        <p class="share-row__tip">默认展示当前题目链接；点任一分享按钮后，框内会换成刚复制的那条，方便手动校对。链接由 <code>location.pathname</code> 拼装，部署在 GitHub Pages 子路径下同样可用。</p>
+      </section>
+
+      <!-- ==================== 最近几题 ==================== -->
+      <aside class="panel panel--history" id="historyPanel" aria-labelledby="historyHeading">
+        <div class="panel__head">
+          <h2 class="panel__title" id="historyHeading">最近几题</h2>
+          <div class="seg" role="group" aria-label="记录范围">
+            <button class="seg__btn is-active" type="button" data-scope="difficulty">当前难度</button>
+            <button class="seg__btn" type="button" data-scope="global">全部难度</button>
+          </div>
+          <label class="mini-label" for="recentCount">显示
+            <select class="select select--mini" id="recentCount"></select>
+          </label>
+        </div>
+
+        <dl class="stats" id="stats"></dl>
+        <p class="meta-line" id="metaLine"></p>
+        <p class="dot-legend">
+          <span class="dot-sm dot-sm--target"></span>目标色
+          <span class="dot-sm is-best"></span>最佳一次（双环 + ★）
+          <span>圆点下数字 = 该次得分，悬停 / 点击看 HSL 与 HSV</span>
+        </p>
+
+        <ol class="history" id="historyList"></ol>
+        <p class="history-empty" id="historyEmpty">还没有记录，先完成一题吧。</p>
+
+        <div class="actions actions--stack">
+          <button class="btn btn--small" id="btnViewHistory" type="button">查看最近成绩</button>
+          <button class="btn btn--small" id="btnShareHistory" type="button">分享最近成绩</button>
+          <button class="btn btn--small btn--danger" id="btnClearHistory" type="button">清空历史记录</button>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <p>纯静态实现，无后端；历史成绩保存在浏览器 <code>localStorage</code> 中。</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>
+    <p class="noscript">本站点的比色逻辑与成绩记录依赖 JavaScript，请开启后使用。</p>
+  </noscript>
+
+  <script src="./script.js?v=3"></script>
+</body>
+</html>
