@@ -1,0 +1,69 @@
+/* ==========================================================================
+   颜色比色挑战 · 设计令牌
+   背景走低饱和三色渐变（天蓝 / 淡紫 / 暖桃）把活力给够，但判色那一块
+   必须坐在中性台上（--stage）：彩色包围会通过同时对比把目标色的色相和
+   明度感知拉偏，这正是本站要练的东西。一团彩色只待在页眉 / 页脚。
+   ========================================================================== */
+
+:root {
+  /* 页面氛围：三色都在高明度区，但饱和比上一版抬了约 1.5 档 ——
+     再淡就退回「灰蒙蒙」了。底色本身也带上蓝，避免渐变之外的中段发灰。 */
+  --bg: #e9eefb;
+  --bg-sky: #bfe3fd;
+  --bg-lilac: #dbc8fb;
+  --bg-peach: #ffd6bd;
+  /* 比色专用中性衬底：色块和三个圆点的直接包围层 */
+  --stage: #f4f5f7;
+  --stage-line: rgba(28, 31, 36, 0.08);
+  --surface: #ffffff;
+  --surface-soft: #f1f4fa;
+  --surface-hover: #e4e9f3;
+  --ink: #171a20;
+  --ink-soft: #454b54;
+  /* 小字辅助色：旧的 #8b9099 在新底上只有约 2.7:1，12px 那一档几乎看不清，
+     提到 5:1 上下；为了不把三级灰度挤成一团，ink-soft 跟着加深一档 */
+  --ink-faint: #606873;
+  --line: #dce1ec;
+  --accent: #3b6ef5;
+  --accent-deep: #2a52c8;
+  --danger: #c2413a;
+  --ok: #1b7a52;
+  --radius-l: 18px;
+  --radius-m: 12px;
+  --radius-s: 8px;
+  --shadow-card: 0 1px 2px rgba(20, 24, 30, 0.05), 0 10px 26px rgba(26, 34, 62, 0.1);
+  --circle-size: clamp(56px, 16vw, 96px);
+}
+
+* { box-sizing: border-box; }
+
+/* display:grid/flex 的容器会盖掉 [hidden] 的 UA 默认样式，这里统一兜底 */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* 三层径向叠加：左上冷、右上紫、底部一把暖桃抬起来，避免“灰蒙蒙”；
+     纯色 --bg 兜底，background-attachment 失效时也不会出现白边。
+     三个 rgba(…, 0) 的 RGB 必须跟同色端点一致：透明色的分量在浏览器插值时
+     仍会参与运算，写成 transparent（=透明黑）会在渐变边缘渗出一圈脏灰。 */
+  background:
+    radial-gradient(88% 62% at 6% -12%, var(--bg-sky) 0%, rgba(191, 227, 253, 0) 62%),
+    radial-gradient(76% 54% at 96% 2%, var(--bg-lilac) 0%, rgba(219, 200, 251, 0) 60%),
+    radial-gradient(120% 74% at 50% 116%, var(--bg-peach) 0%, rgba(255, 214, 189, 0) 58%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC",
+    "Helvetica Neue", "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.6;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 40px) clamp(14px, 4vw, 28px) 48px;
+}
+

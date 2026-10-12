@@ -6,8 +6,15 @@
   <meta name="color-scheme" content="light" />
   <meta name="description" content="颜色比色挑战：每题三次猜测机会，调节 HSL 滑块还原目标颜色，记录最近几题准确率并可分享。" />
   <title>颜色比色挑战 · 三次猜测</title>
-  <!-- ?v= 是手动版本号：改版后递增它，否则浏览器磁盘缓存会继续用旧 css/js -->
-  <link rel="stylesheet" href="./styles.css?v=3" />
+  <!-- ?v= 是手动版本号：改版后递增它，否则浏览器磁盘缓存会继续用旧 css/js。
+       六个文件必须同一次递增，漏一个就会出现新 JS 配旧 CSS 的半改版状态。
+       顺序 = 拆分前 styles.css 的段落顺序：响应式必须排最后才能盖住前面的规则。 -->
+  <link rel="stylesheet" href="./src/css/tokens.css?v=10" />
+  <link rel="stylesheet" href="./src/css/shell.css?v=10" />
+  <link rel="stylesheet" href="./src/css/layout.css?v=10" />
+  <link rel="stylesheet" href="./src/css/game.css?v=10" />
+  <link rel="stylesheet" href="./src/css/history.css?v=10" />
+  <link rel="stylesheet" href="./src/css/responsive.css?v=10" />
 </head>
 <body>
   <div class="page">
@@ -16,7 +23,13 @@
         <h1 class="masthead__title">颜色比色挑战</h1>
         <p class="masthead__sub">三次猜测机会 · HSL 滑块还原目标色 · 成绩本地保存</p>
       </div>
-      <p class="masthead__badge" id="levelBadge">难度 1</p>
+      <!-- 难度步进器：与比色台里的 .select 是同一个 state 的两个入口。
+           窄屏上 .level-row 被排到首屏之外，这里就是不用滑回去的那个入口。 -->
+      <div class="level-stepper" id="levelBadge" role="group" aria-label="切换难度">
+        <button class="level-stepper__btn" id="btnLevelDown" type="button" aria-label="难度减一">−</button>
+        <span class="level-stepper__now">难度 <b class="level-stepper__val" id="levelBadgeValue">1</b></span>
+        <button class="level-stepper__btn" id="btnLevelUp" type="button" aria-label="难度加一">+</button>
+      </div>
     </header>
 
     <!-- 分享链接打开时的模式提示（题目模式 / 只读成绩模式） -->
@@ -120,11 +133,12 @@
           <label class="share-row__label" for="shareLink">分享链接</label>
           <input class="share-row__input" id="shareLink" type="text" readonly spellcheck="false" />
           <div class="share-row__btns">
-            <button class="btn btn--small" id="btnCopyLink" type="button">复制分享链接</button>
-            <button class="btn btn--small" id="btnCopyResult" type="button">分享本题成绩</button>
+            <button class="btn btn--small" id="btnCopyLink" type="button">复制链接</button>
+            <button class="btn btn--small" id="btnCopyResult" type="button">分享成绩</button>
+            <button class="btn btn--small" id="btnMakeCard" type="button">分享卡片</button>
           </div>
         </div>
-        <p class="share-row__tip">默认展示当前题目链接；点任一分享按钮后，框内会换成刚复制的那条，方便手动校对。链接由 <code>location.pathname</code> 拼装，部署在 GitHub Pages 子路径下同样可用。</p>
+        <p class="share-row__tip">默认展示当前题目链接；点任一分享按钮后，框内会换成刚复制的那条，方便手动校对。卡片是 1080×1350 的 PNG，手机上优先调系统分享，不支持时直接下载。链接由 <code>location.pathname</code> 拼装，部署在 GitHub Pages 子路径下同样可用。</p>
       </section>
 
       <!-- ==================== 最近几题 ==================== -->
@@ -154,6 +168,7 @@
         <div class="actions actions--stack">
           <button class="btn btn--small" id="btnViewHistory" type="button">查看最近成绩</button>
           <button class="btn btn--small" id="btnShareHistory" type="button">分享最近成绩</button>
+          <button class="btn btn--small" id="btnHistoryCard" type="button">分享卡片</button>
           <button class="btn btn--small btn--danger" id="btnClearHistory" type="button">清空历史记录</button>
         </div>
       </aside>
@@ -161,6 +176,10 @@
 
     <footer class="foot">
       <p>纯静态实现，无后端；历史成绩保存在浏览器 <code>localStorage</code> 中。</p>
+      <p>
+        源码仓库：
+        <a class="foot__link" href="https://github.com/greenhandzdl/HSV-testing" target="_blank" rel="noopener noreferrer">github.com/greenhandzdl/HSV-testing</a>
+      </p>
     </footer>
   </div>
 
@@ -170,6 +189,8 @@
     <p class="noscript">本站点的比色逻辑与成绩记录依赖 JavaScript，请开启后使用。</p>
   </noscript>
 
-  <script src="./script.js?v=3"></script>
+  <!-- ES 模块：src/js/ 下按职责拆分，main.js 是唯一入口；file:// 协议会被 CORS 拦，本地要看 http://
+       版本号只加在入口上（src/js 内部的 import 不带），改了子模块请硬刷或 Disable cache -->
+  <script type="module" src="./src/js/main.js?v=10"></script>
 </body>
 </html>

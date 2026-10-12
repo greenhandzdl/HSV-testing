@@ -1,0 +1,103 @@
+/* 双栏骨架：面板容器 + 难度行控件 */
+/* --------------------------------------------------------------------------
+   布局：桌面端左游戏右历史，移动端纵向堆叠
+   -------------------------------------------------------------------------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: clamp(16px, 2.4vw, 24px);
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--stage-line);
+  border-radius: var(--radius-l);
+  /* 白卡片坐在彩色渐变上，单靠阴影会把边缘推发虚；1px 中性描边把轮廓钉住 */
+  box-shadow: var(--shadow-card);
+  padding: clamp(16px, 3vw, 24px);
+}
+
+.panel--history { position: sticky; top: 16px; }
+
+.panel__title {
+  margin: 0 0 14px;
+  font-size: 17px;
+  letter-spacing: 0.3px;
+}
+
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.panel__head .panel__title { margin: 0 auto 0 0; }
+
+/* --------------------------------------------------------------------------
+   难度行
+   -------------------------------------------------------------------------- */
+.level-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(14px, 2.6vw, 20px);
+}
+
+.level-row__label { font-weight: 650; font-size: 14px; }
+
+.level-row__hint {
+  margin-left: auto;
+  color: var(--ink-faint);
+  font-size: 12.5px;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 30px 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface-soft)
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4.5 6 8.5 10 4.5' fill='none' stroke='%235a6069' stroke-width='1.6' stroke-linecap='round'/></svg>")
+    no-repeat right 10px center;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.select--mini { padding: 4px 26px 4px 8px; font-size: 13px; }
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.mini-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+

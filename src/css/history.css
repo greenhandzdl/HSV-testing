@@ -1,0 +1,206 @@
+/* 分享行 + 最近几题面板（分段 / 统计 / 列表 / 圆点图例） */
+/* --------------------------------------------------------------------------
+   分享行
+   -------------------------------------------------------------------------- */
+.share-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.share-row__label { font-size: 13.5px; font-weight: 650; white-space: nowrap; }
+
+.share-row__input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.share-row__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.share-row__btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.share-row__tip { margin: 8px 0 0; font-size: 12px; color: var(--ink-faint); }
+
+/* --------------------------------------------------------------------------
+   最近几题面板
+   -------------------------------------------------------------------------- */
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  gap: 2px;
+}
+
+.seg__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.seg__btn:hover { color: var(--ink); }
+
+.seg__btn.is-active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(20, 24, 30, 0.16); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 12px;
+  border-radius: var(--radius-m);
+  background: var(--surface-soft);
+}
+
+.stats__item { margin: 0; }
+
+.stats__k { display: block; font-size: 11.5px; color: var(--ink-faint); }
+
+.stats__v {
+  display: block;
+  font-size: 16px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-line {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* 一条分隔语言就够：原来“灰底 + 项间 border-top”两套同时在用，
+   项间已经有 10px 间距，那根 border-top 只是多出来的噪点。现只留浅底。 */
+.history__item {
+  padding: 10px 12px;
+  border-radius: var(--radius-m);
+  background: var(--surface-soft);
+  display: grid;
+  gap: 6px;
+}
+
+.history__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.history__score {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.history__rating { font-weight: 650; color: var(--ok); }
+
+.history__dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* 一个圆点 + 下方该次得分，不必悬停也能读出数字 */
+.dot-cell {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  width: 28px;
+}
+
+.dot-cell__cap {
+  font-size: 10px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.dot-cell--target .dot-cell__cap { color: var(--ink-faint); }
+
+.dot-sm {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(20, 24, 30, 0.25);
+  flex: 0 0 auto;
+}
+
+/* 最佳那次：白内环 + 深外环。单靠半透明深环在深色圆点上对比只有 1.6:1，几乎看不出 */
+.dot-sm.is-best {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(28, 31, 36, 0.9), 0 1px 3px rgba(20, 24, 30, 0.25);
+}
+
+.dot-sm.is-best::before {
+  content: '★';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 11px;
+  line-height: 1;
+  color: #1c1f24;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
+}
+
+.dot-sm--target {
+  /* 方形 = 目标色，与圆形的猜测点形成形状差异，不用边框以免影响比色 */
+  border-radius: 5px;
+}
+
+/* 斜纹只做图例占位，不能加到真实目标点上（会盖掉内联 background-color） */
+.dot-legend .dot-sm--target {
+  background: repeating-linear-gradient(45deg, #e6e8ee 0 4px, #f6f7fa 4px 8px);
+}
+
+.dot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding-top: 8px; /* 给最佳点右上角的 ★ 留出位置，不被上一行裁掉 */
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+.dot-legend .dot-sm {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+}
+

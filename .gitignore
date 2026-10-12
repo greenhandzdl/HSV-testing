@@ -427,5 +427,7 @@ FodyWeavers.xsd
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
 
-# 浏览器取证截图：纯静态站点不需要构建产物，误提交会被 GitHub Pages 一起发布
+# 自测产物：对拍用的合并样式、只读 harness、浏览器取证截图。纯静态站点没有构建产物，
+# 这些误提交会被 GitHub Pages 一起发出去
+_qa/
 qa-*.png

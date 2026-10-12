@@ -1,0 +1,226 @@
+/* 页眉 / 难度步进器 / 提示条 / 数值浮层 / 只读视图 / Toast / 页脚 */
+/* --------------------------------------------------------------------------
+   头部
+   -------------------------------------------------------------------------- */
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: clamp(16px, 3vw, 28px);
+}
+
+.masthead__title {
+  margin: 0;
+  font-size: clamp(22px, 5vw, 32px);
+  letter-spacing: 0.5px;
+}
+
+.masthead__sub {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(13px, 3.4vw, 15px);
+}
+
+/* 页眉难度步进器：外观沿用原来的胶囊徽标，只是多了 − / + 两个按钮。
+   按钮取 32px：高于 WCAG 2.5.8 的 24px 下限，又不至于把页眉顶高，
+   挤掉移动端首屏的提交按钮（首屏预算是逐像素抢出来的）。 */
+.level-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  font-size: 14px;
+}
+
+.level-stepper__now { padding: 0 2px; }
+
+.level-stepper__val {
+  display: inline-block;
+  min-width: 1.2em;
+  text-align: center;
+  font-weight: 700;
+}
+
+.level-stepper__btn {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.level-stepper__btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+
+.level-stepper__btn:active:not(:disabled) { background: var(--accent-deep); color: #fff; }
+
+.level-stepper__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 到边界就禁用而不是「按了没反应」，禁用态同时由 aria-label 说明原因 */
+.level-stepper__btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.banner {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-m);
+  background: #fff8e6;
+  color: #7a5a12;
+  box-shadow: var(--shadow-card);
+  font-size: 14px;
+}
+
+.noscript {
+  margin: 0 auto 20px;
+  padding: 12px 16px;
+  max-width: 1180px;
+  border-radius: var(--radius-m);
+  background: #ffe9e9;
+  color: #8c2b26;
+}
+
+/* --------------------------------------------------------------------------
+   即时数值浮层
+   数值原来只挂在 title 上：触屏、键盘、读屏都拿不到，且原生提示要等约 1 秒。
+   浮层由 src/js/tip.js 定位到 body 上（position:fixed），
+   因此不会被 .history 的 overflow 滚动容器裁掉。
+   -------------------------------------------------------------------------- */
+[data-tip] { cursor: help; }
+
+.dot-sm[data-tip] { outline: none; } /* 焦点环交给 is-best 的双环表达，避免叠加 */
+
+.tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(28, 31, 36, 0.94);
+  color: #f4f5f7;
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: pre-line; /* 属性里用 &#10; 换行 */
+  box-shadow: 0 8px 22px rgba(20, 24, 30, 0.35);
+  pointer-events: none;
+}
+
+.history-empty {
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 13px;
+  border-radius: var(--radius-m);
+  background: var(--surface-soft);
+}
+
+.panel--history.is-flash { animation: flash 900ms ease; }
+
+@keyframes flash {
+  0%, 100% { box-shadow: var(--shadow-card); }
+  30% { box-shadow: 0 0 0 3px rgba(47, 111, 235, 0.45), var(--shadow-card); }
+}
+
+/* --------------------------------------------------------------------------
+   只读分享视图
+   -------------------------------------------------------------------------- */
+.share-view {
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  padding: clamp(16px, 3vw, 24px);
+  margin-bottom: 20px;
+}
+
+.share-view__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.share-view__title { margin: 0; font-size: 18px; }
+
+.share-view__note { margin: 12px 0 0; font-size: 12px; color: var(--ink-faint); }
+
+/* --------------------------------------------------------------------------
+   Toast / 页脚
+   -------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  /* 不写 width 的话，绝对定位只给 left 时 shrink-to-fit 只能用到视口右半边：
+     390px 宽的手机上 toast 被压成 195px，一句二十来字的话排四行。max-content 让它
+     按文本撑开，再由下面那条 max-width 收进 90vw，两端都能正常换行。 */
+  width: max-content;
+  max-width: min(90vw, 420px);
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(28, 31, 36, 0.92);
+  color: #fff;
+  font-size: 13.5px;
+  text-align: center;
+  z-index: 50;
+  animation: toast-in 180ms ease;
+}
+
+.toast.is-error { background: rgba(146, 44, 38, 0.95); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* 页脚直接坐在渐变底上（不像面板里有白卡托着），而它恰好落在暖桃那一团最浓的位置。
+   --ink-faint 在 #ffd6bd 上只剩 4.2:1，12.5px 的小字不够看，所以这里破例用 --ink-soft（6.5:1）。 */
+.foot {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.foot code { font-size: 12px; }
+
+/* 仓库友链：这排 12.5px 小字照抄正文灰就等于是纯文本，链接看不出来。
+   这里比 --ink-soft 再深一档，在渐变底最深的三处端点（#bfe3fd / #dbc8fb / #ffd6bd）
+   都稳在 6:1 以上；hover 只加粗下划线不换色，免得浅色的 hover 态把对比度又拉回去。
+   纵向 padding 把触屏点击热区顶到 24px。 */
+.foot__link {
+  color: #4a5058;
+  padding: 5px 2px;
+  text-decoration: underline;
+  text-decoration-color: rgba(74, 80, 88, 0.55);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
+}
+
+.foot__link:hover,
+.foot__link:focus-visible {
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+}
+
+.foot__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
