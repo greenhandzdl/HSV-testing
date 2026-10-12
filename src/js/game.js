@@ -198,11 +198,33 @@ export function shareRecentHistory() {
 }
 
 /**
+ * 卡片统一出口：两张卡都走这里——渲染失败与分享结果在同一处收口，
+ * 提示口径不会各自漂移。render 是同步的画布组装，outputCard 才 await，
+ * 尽量把 navigator.share 贴近点击的用户手势（见 main.js 绑定处注释）。
+ * @param {() => HTMLCanvasElement} render 现场画这张卡（抛错即视为生成失败）
+ * @param {{ name: string }} out 下载分支用的文件名（分享只给图片，不带文案）
+ */
+async function deliverCard(render, { name }) {
+  let canvas;
+  try {
+    canvas = render();
+  } catch (err) {
+    toast(`卡片生成失败：${err && err.message ? err.message : '画不出这一张'}`, true);
+    return;
+  }
+  const how = await outputCard(canvas, { name });
+  if (how === 'shared') toast('已交给系统分享面板');
+  else if (how === 'downloaded') toast('卡片已下载为 PNG，可直接发图');
+  else if (how === 'failed') toast('系统分享未完成，请再点一次重试', true);
+  // 'cancelled'：用户在系统面板主动收回，不打扰
+}
+
+/**
  * 生成分享卡片：本题成绩 + 最近几题 + 二维码。
- * 目标色没揭晓（没结算且没勾选揭晓）时，卡片不画目标色、二维码也不带目标色，
+ * 目标色没揭晓（没勾选揭晓且没结算）时，卡片不画目标色、二维码也不带目标色，
  * 与页面上的防作弊口径保持一致（见 ui.js 的 renderSwatches）。
  */
-export async function shareCard() {
+export function shareCard() {
   if (state.readOnly) {
     // 只读视图里的原因不是“没猜过”，而是这一页本来就不是自己玩的，两者分开说
     toast('只读分享视图里不生成卡片', true);
@@ -218,32 +240,24 @@ export async function shareCard() {
   const revealed = state.revealTarget || state.finalized;
   const entries = HistoryStore.list(state.scope, state.difficulty);
   const stats = HistoryStore.computeStats(entries, state.recentCount);
-  let canvas;
-  try {
-    canvas = renderCard({
-      question: round.question,
-      difficulty: round.difficulty,
-      final: round.final,
-      rating: ratingOf(round.final),
-      target: round.target,
-      best: round.attempts[bestIndex],
-      bestIndex,
-      attempts: round.attempts,
-      revealed,
-      stats,
-      history: entries.slice(0, HISTORY_ROWS),
-      url: revealed ? Share.cardUrl(round) : Share.siteUrl(),
-    });
-  } catch (err) {
-    toast(`卡片生成失败：${err && err.message ? err.message : '画不出这一张'}`, true);
-    return;
-  }
-  const how = await outputCard(canvas, {
-    name: cardFileName(round.final),
-    text: `本题 ${round.final.toFixed(1)} 分`,
-  });
-  if (how === 'shared') toast('已交给系统分享面板');
-  else if (how === 'downloaded') toast('卡片已下载为 PNG，可直接发图');
+  return deliverCard(
+    () =>
+      renderCard({
+        question: round.question,
+        difficulty: round.difficulty,
+        final: round.final,
+        rating: ratingOf(round.final),
+        target: round.target,
+        best: round.attempts[bestIndex],
+        bestIndex,
+        attempts: round.attempts,
+        revealed,
+        stats,
+        history: entries.slice(0, HISTORY_ROWS),
+        url: revealed ? Share.cardUrl(round) : Share.siteUrl(),
+      }),
+    { name: cardFileName(round.final) }
+  );
 }
 
 /**
@@ -251,7 +265,7 @@ export async function shareCard() {
  * 与本题卡的分工：本题卡讲这一题的对比，历史卡讲一批题的分布，
  * 所以取数口径跟着面板的「最近 N」走，而不是另定一个条数。
  */
-export async function shareHistoryCard() {
+export function shareHistoryCard() {
   if (state.readOnly) {
     toast('只读分享视图里不生成卡片', true);
     return;
@@ -266,25 +280,17 @@ export async function shareHistoryCard() {
   // stats.count 已经按「最近 N」截好，版面顶多 HISTORY_CARD_ROWS 行，两个约束取小的那个；
   // 条数必须跟概览行的「共 X 题」完全对齐，否则卡上会出现两个不同的样本数
   const rows = entries.slice(0, Math.min(stats.count, HISTORY_CARD_ROWS));
-  let canvas;
-  try {
-    canvas = renderHistoryCard({
-      scopeText: `${scopeName} · 最近 ${stats.count} 题`,
-      stats,
-      rating: historyRatingOf(stats.avg),
-      history: rows,
-      url: Share.historyCardUrl(entries, stats, state.scope),
-    });
-  } catch (err) {
-    toast(`卡片生成失败：${err && err.message ? err.message : '画不出这一张'}`, true);
-    return;
-  }
-  const how = await outputCard(canvas, {
-    name: historyCardFileName(stats.avg),
-    text: `最近 ${stats.count} 题均分 ${stats.avg.toFixed(1)}`,
-  });
-  if (how === 'shared') toast('已交给系统分享面板');
-  else if (how === 'downloaded') toast('卡片已下载为 PNG，可直接发图');
+  return deliverCard(
+    () =>
+      renderHistoryCard({
+        scopeText: `${scopeName} · 最近 ${stats.count} 题`,
+        stats,
+        rating: historyRatingOf(stats.avg),
+        history: rows,
+        url: Share.historyCardUrl(entries, stats, state.scope),
+      }),
+    { name: historyCardFileName(stats.avg) }
+  );
 }
 
 export function clearHistory() {

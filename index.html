@@ -7,14 +7,15 @@
   <meta name="description" content="颜色比色挑战：每题三次猜测机会，调节 HSL 滑块还原目标颜色，记录最近几题准确率并可分享。" />
   <title>颜色比色挑战 · 三次猜测</title>
   <!-- ?v= 是手动版本号：改版后递增它，否则浏览器磁盘缓存会继续用旧 css/js。
-       六个文件必须同一次递增，漏一个就会出现新 JS 配旧 CSS 的半改版状态。
+       六条 CSS 与入口 main.js 一起递增（共七处），漏一个就会出现新 JS 配旧 CSS 的半改版状态。
+       src/js/ 内部的 import 不带版本号，改子模块只能靠这个入口版本 + 硬刷兜底。
        顺序 = 拆分前 styles.css 的段落顺序：响应式必须排最后才能盖住前面的规则。 -->
-  <link rel="stylesheet" href="./src/css/tokens.css?v=10" />
-  <link rel="stylesheet" href="./src/css/shell.css?v=10" />
-  <link rel="stylesheet" href="./src/css/layout.css?v=10" />
-  <link rel="stylesheet" href="./src/css/game.css?v=10" />
-  <link rel="stylesheet" href="./src/css/history.css?v=10" />
-  <link rel="stylesheet" href="./src/css/responsive.css?v=10" />
+  <link rel="stylesheet" href="./src/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="./src/css/shell.css?v=12" />
+  <link rel="stylesheet" href="./src/css/layout.css?v=12" />
+  <link rel="stylesheet" href="./src/css/game.css?v=12" />
+  <link rel="stylesheet" href="./src/css/history.css?v=12" />
+  <link rel="stylesheet" href="./src/css/responsive.css?v=12" />
 </head>
 <body>
   <div class="page">
@@ -191,6 +192,6 @@
 
   <!-- ES 模块：src/js/ 下按职责拆分，main.js 是唯一入口；file:// 协议会被 CORS 拦，本地要看 http://
        版本号只加在入口上（src/js 内部的 import 不带），改了子模块请硬刷或 Disable cache -->
-  <script type="module" src="./src/js/main.js?v=10"></script>
+  <script type="module" src="./src/js/main.js?v=12"></script>
 </body>
 </html>

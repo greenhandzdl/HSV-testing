@@ -318,24 +318,41 @@ function toBlob(canvas) {
 }
 
 /**
- * 手机优先走系统分享（存相册 / 发社交平台），桌面或不支持文件分享时降级成下载。
- * 用户在分享面板上取消（AbortError）不算失败，也不该再弹一次下载。
- * name / text 由调用方给：两张卡的文件名与分享文本口径不同，不该在这里猜是哪一张。
- * @returns {Promise<'shared'|'downloaded'|'cancelled'>}
+ * 卡片出口：能分享文件就交给系统分享面板，并把分享结果当作**终点**——成功 / 取消 / 被打断
+ * 都到此为止，绝不再补一次下载。以前的写法把「share 抛出非 AbortError」也当成降级信号，
+ * 于是用户拿到「系统分享出去的一张 + 又自动下载的一张」= 两张图片（iOS/Safari 关掉分享面板、
+ * NotAllowedError、手势丢失都会走进这个坑）。只有系统**根本不支持文件分享**时才降级为下载，
+ * 且下载也只产出一张。
+ * 分享时只带图片文件本身，不附带 title / text：一次带上「图片 + 文本」会让系统分享面板把
+ * 两项一起塞进粘贴板，拷贝时出现「图片 + 富文本预览」两张；QQ 一类不支持文件的目标又只取文本、
+ * 把图片丢掉。卡片画面已含全部信息，无需额外文案——只分享这一张 PNG。
+ * name 由调用方给：两张卡的文件名口径不同，不该在这里猜是哪一张。
+ * @returns {Promise<'shared'|'cancelled'|'downloaded'|'failed'>}
  */
-export async function outputCard(canvas, { name, text }) {
+export async function outputCard(canvas, { name }) {
   const blob = (await toBlob(canvas)) || null;
-  if (!blob) return 'cancelled';
+  if (!blob) return 'failed';
+
+  // File 构造失败（无 File / 无 share 的旧环境）时留空，直接落到下面的下载分支
+  let file = null;
   try {
-    const file = new File([blob], name, { type: 'image/png' });
-    if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: '颜色比色挑战', text });
-      return 'shared';
-    }
+    if (typeof File === 'function') file = new File([blob], name, { type: 'image/png' });
   } catch (err) {
-    if (err && err.name === 'AbortError') return 'cancelled';
-    /* 其它异常继续走下载 */
+    file = null;
   }
+
+  if (file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return 'shared';
+    } catch (err) {
+      // 用户主动取消（AbortError）与其它异常都视作「分享这条路径已经结束」，不再往下走下载；
+      // 只有非取消的失败才回 'failed' 让上层提示重试，取消则安静返回 'cancelled'
+      return err && err.name === 'AbortError' ? 'cancelled' : 'failed';
+    }
+  }
+
+  // 系统不支持文件分享（桌面旧版 / Firefox 等）：下载是这里唯一的出口，依旧只产出一张
   const href = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = href;
