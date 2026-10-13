@@ -36,7 +36,7 @@
   .panel--game > .level-row { order: 75; border-bottom: 0; padding-bottom: 0; }
   .stage { display: contents; }
   .stage__pair { order: 30; }
-  .sliders { order: 40; gap: 10px; margin: 0; }
+  .sliders { order: 40; gap: 6px; margin: 0; }
   .actions { order: 50; }
   .guesses { order: 60; justify-content: flex-start; }
   .stage__note { order: 70; margin: 0; }
@@ -55,6 +55,15 @@
   .btn--small { min-height: 44px; }
   .range::-webkit-slider-thumb { width: 30px; height: 30px; margin-top: -8px; }
   .range::-moz-range-thumb { width: 30px; height: 30px; }
+  /* ± 微调按钮把标题行抬到 32px（三条共 +30px），首屏预算得还回去：
+     标题行下边距 6 → 0 与三条间距 10 → 6 共收回 14px，按钮只加宽到 36px 不加高
+     （手指落点变大而纵向开销为零），剩下的落在下方 6px 余量里：
+     实测 360×560（地址栏吃掉后的最紧可用高）提交按钮底边 555 / 560。
+     标题行不再留下边距不是贴在一起：.range 高 44px 而轨道只有 14px，
+     居中后上方本就空出一截，视觉间隔还在 */
+  .slider__head { margin-bottom: 0; }
+  .stepper { gap: 6px; }
+  .stepper__btn { width: 36px; }
   .share-row { grid-template-columns: minmax(0, 1fr); }
   .share-row__btns { justify-content: stretch; }
   .share-row__btns .btn { flex: 1 1 0; }

@@ -8,6 +8,18 @@ export const CONFIG = Object.freeze({
   // 每题开始时滑块的初始值（中性灰蓝，不泄露目标色）
   ROUND_DEFAULT: Object.freeze({ h: 180, s: 50, l: 50 }),
 
+  // 三条轴的上限（下限统一是 0）。滑块与 ± 按钮共用这一份：两边各写一个数，
+  // 迟早会出现「滑块能拖到 360 而按钮只让到 359」这种对不齐的边界
+  AXES: Object.freeze({ h: 360, s: 100, l: 100 }),
+
+  // ± 微调按钮：轻点走一格，按住进入连发，间隔逐帧收窄到 fastDelay
+  STEPPER: Object.freeze({
+    step: 1,        // 单档步长；要粗调请拖滑块，按钮只负责细微修正
+    holdDelay: 400, // 按住多久开始连发（够长，不会把一次普通点击读成连发）
+    fastDelay: 70,  // 连发收敛到的最小间隔
+    rampFrames: 6,  // 用几帧把间隔降到位：起步慢得看得清，越按越快
+  }),
+
   SCORE: Object.freeze({
     weights: Object.freeze({ h: 0.65, s: 0.2, l: 0.15 }), // 色相权重最高
     hueMaxDistance: 180, // 色相环形距离上限

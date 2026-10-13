@@ -58,6 +58,9 @@ export function cacheDom() {
     el[id] = document.getElementById(id);
   });
   el.segButtons = Array.from(document.querySelectorAll('.seg__btn'));
+  // 三条轴的 ± 按钮：靠 data-axis / data-dir 区分，不进上面的 id 名单，
+  // 否则六个 id 与六个分支写死在入口里，加一档步长就要再改一处
+  el.stepButtons = Array.from(document.querySelectorAll('.stepper__btn'));
 }
 
 let toastTimer = null;

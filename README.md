@@ -11,11 +11,12 @@
 ## 结构
 
 - `index.html` 唯一页面；`src/css/` 六个样式域按 `tokens → shell → layout → game → history → responsive` 顺序 `<link>`（响应式必须最后，才能盖住前面的规则）。
-- `src/js/` 17 个 ES 模块，`main.js` 是唯一入口，其余模块彼此不认识。两张分享卡共用 `card.js` 画图工具箱（版式预算 / 逐题条 / 二维码 / 导出），`card-round.js`、`card-history.js` 各画一张，数据由 `game.js` 打包送进来。零依赖二维码编码器 `src/js/qr.js` 可用 `node tools/qr-check.mjs` 对拍 ISO/IEC 18004。
+- `src/js/` 18 个 ES 模块，`main.js` 是唯一入口，其余模块彼此不认识。两张分享卡共用 `card.js` 画图工具箱（版式预算 / 逐题条 / 二维码 / 导出），`card-round.js`、`card-history.js` 各画一张，数据由 `game.js` 打包送进来。零依赖二维码编码器 `src/js/qr.js` 可用 `node tools/qr-check.mjs` 对拍 ISO/IEC 18004。
 
 ## 玩法与评分
 
 - 三条滑杆轨道都带真实色带；猜测提交后凝固成圆点，**悬停 / 点击即可回看它的 HSL 与 HSV**。
+- 每根滑杆的读数旁有一对 **− / + 微调按钮**（`stepper.js`）：轻点走一格，长按加速连发、抬手即停，到轴端自动钳制并把那个方向的按钮置灰（`aria-disabled`）。滑杆保持满宽，拖拽精度不退化，按钮只作细调补充，与拖拽共用 `game.js` 的 `adjustGuess` 写入口。
 - **目标色**结算前只有颜色，读数 / 浮层 / `aria-label` 一并封死防作弊。选项「显示目标数值」默认关，「自动递增」按 ≥88 升级 / <45 降级。
 - 难度 1–10 有两个入口（页眉 ± 步进器、比色台下拉，都走同一个 `setDifficulty`）：步进器 ±1 不弹确认，下拉可跳多级、放弃未结算尝试前会确认。
 - 评分：`dH = min(|ΔH|, 360−|ΔH|)`，`total = 100 × (0.65·(1−dH/180) + 0.20·(1−|ΔS|/100) + 0.15·(1−|ΔL|/100))`，最终分取三次最高。难度只把饱和度高斯均值压到 `clamp(85−6d, 15, 85)`（越高越灰）。

@@ -2,7 +2,7 @@
  * 回合流转与分享动作：这里是唯一允许写 state 的地方（渲染层只读）。
  */
 import { CONFIG } from './config.js';
-import { clamp } from './utils.js';
+import { clamp, num } from './utils.js';
 import { scoreOf, resolveFinal, generateTarget, ratingOf, historyRatingOf } from './rules.js';
 import * as HistoryStore from './history.js';
 import * as Share from './share.js';
@@ -53,6 +53,20 @@ export function setDifficulty(next, { ask = true } = {}) {
       : `已切到难度 ${target}，该难度的最近记录已载入`
   );
   return true;
+}
+
+/**
+ * 猜测值的唯一写入出口：滑块的 input 事件和 ± 按钮都走这里。
+ * 两条入口共用同一套钳制取整 + 刷新，才不会出「拖滑块会变色、按按钮只改数字不变色」
+ * 这种半截同步。非法输入（NaN / 超范围）退回当前值，不把 state 写成 NaN。
+ */
+export function adjustGuess(key, next) {
+  const max = CONFIG.AXES[key];
+  if (max === undefined) return;
+  state.guess[key] = Math.round(num(next, 0, max, state.guess[key]));
+  renderSwatches();
+  renderSliders();
+  renderShareLink();
 }
 
 export function submitGuess() {

@@ -11,15 +11,15 @@ import * as Share from './share.js';
 import { state } from './state.js';
 import { el, cacheDom, toast } from './dom.js';
 import { bind as bindTip } from './tip.js';
+import { bindSteppers } from './stepper.js';
 import {
   renderGame,
   renderSwatches,
-  renderSliders,
-  renderShareLink,
   renderHistory,
 } from './ui.js';
 import {
   setDifficulty,
+  adjustGuess,
   submitGuess,
   nextQuestion,
   resetAdjustment,
@@ -59,17 +59,16 @@ function bindEvents() {
     renderSwatches();
   });
 
-  const bindRange = (input, key, max) => {
-    input.addEventListener('input', (event) => {
-      state.guess[key] = Math.round(num(event.target.value, 0, max, state.guess[key]));
-      renderSwatches();
-      renderSliders();
-      renderShareLink();
-    });
+  // 滑块只能按像素粗调，± 按钮负责细微修正；两条入口都走 adjustGuess，
+  // 改值与刷新只有一份口径
+  const bindRange = (input, key) => {
+    input.addEventListener('input', (event) => adjustGuess(key, Number(event.target.value)));
   };
-  bindRange(el.rangeHue, 'h', 360);
-  bindRange(el.rangeSat, 's', 100);
-  bindRange(el.rangeLight, 'l', 100);
+  bindRange(el.rangeHue, 'h');
+  bindRange(el.rangeSat, 's');
+  bindRange(el.rangeLight, 'l');
+
+  bindSteppers(el.stepButtons, (key, delta) => adjustGuess(key, state.guess[key] + delta));
 
   el.btnSubmit.addEventListener('click', submitGuess);
   el.btnNext.addEventListener('click', nextQuestion);

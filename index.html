@@ -10,12 +10,12 @@
        六条 CSS 与入口 main.js 一起递增（共七处），漏一个就会出现新 JS 配旧 CSS 的半改版状态。
        src/js/ 内部的 import 不带版本号，改子模块只能靠这个入口版本 + 硬刷兜底。
        顺序 = 拆分前 styles.css 的段落顺序：响应式必须排最后才能盖住前面的规则。 -->
-  <link rel="stylesheet" href="./src/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="./src/css/shell.css?v=12" />
-  <link rel="stylesheet" href="./src/css/layout.css?v=12" />
-  <link rel="stylesheet" href="./src/css/game.css?v=12" />
-  <link rel="stylesheet" href="./src/css/history.css?v=12" />
-  <link rel="stylesheet" href="./src/css/responsive.css?v=12" />
+  <link rel="stylesheet" href="./src/css/tokens.css?v=13" />
+  <link rel="stylesheet" href="./src/css/shell.css?v=13" />
+  <link rel="stylesheet" href="./src/css/layout.css?v=13" />
+  <link rel="stylesheet" href="./src/css/game.css?v=13" />
+  <link rel="stylesheet" href="./src/css/history.css?v=13" />
+  <link rel="stylesheet" href="./src/css/responsive.css?v=13" />
 </head>
 <body>
   <div class="page">
@@ -88,12 +88,22 @@
           <p class="stage__note" id="stageNote">提交后，本次猜测会凝固成圆形色块；悬停 / 点击色块可回看它的 HSL 与 HSV。</p>
         </div>
 
-        <!-- HSL 滑块 -->
+        <!-- HSL 滑块
+             读数右边的 ± 是微调入口：手指拖滑块只能按像素粗调（窄屏上一格不到 1 像素），
+             差 1、2 度时拖不准。按钮放在标题行而不是滑块两侧，是为了让轨道保持满宽 ——
+             把 ± 夹到左右两侧会各吃掉约 44px 轨道，剩下的宽度上每一像素代表的数值更大，
+             粗调反而更不准。 -->
         <div class="sliders">
           <div class="slider">
             <div class="slider__head">
               <label class="slider__label" for="rangeHue">色相 H</label>
-              <output class="slider__out" id="outHue" for="rangeHue">180°</output>
+              <span class="slider__ctrl">
+                <output class="slider__out" id="outHue" for="rangeHue">180°</output>
+                <span class="stepper" role="group" aria-label="色相微调">
+                  <button class="stepper__btn" type="button" data-axis="h" data-dir="-1" aria-label="色相减 1">−</button>
+                  <button class="stepper__btn" type="button" data-axis="h" data-dir="1" aria-label="色相加 1">+</button>
+                </span>
+              </span>
             </div>
             <input class="range range--hue" type="range" id="rangeHue" min="0" max="360" step="1" value="180" />
             <div class="slider__scale"><span>0°</span><span>180°</span><span>360°</span></div>
@@ -101,7 +111,13 @@
           <div class="slider">
             <div class="slider__head">
               <label class="slider__label" for="rangeSat">饱和度 S</label>
-              <output class="slider__out" id="outSat" for="rangeSat">50%</output>
+              <span class="slider__ctrl">
+                <output class="slider__out" id="outSat" for="rangeSat">50%</output>
+                <span class="stepper" role="group" aria-label="饱和度微调">
+                  <button class="stepper__btn" type="button" data-axis="s" data-dir="-1" aria-label="饱和度减 1">−</button>
+                  <button class="stepper__btn" type="button" data-axis="s" data-dir="1" aria-label="饱和度加 1">+</button>
+                </span>
+              </span>
             </div>
             <input class="range range--sat" type="range" id="rangeSat" min="0" max="100" step="1" value="50" />
             <div class="slider__scale"><span>0% 灰</span><span>50%</span><span>100% 纯</span></div>
@@ -109,7 +125,13 @@
           <div class="slider">
             <div class="slider__head">
               <label class="slider__label" for="rangeLight">明度 L</label>
-              <output class="slider__out" id="outLight" for="rangeLight">50%</output>
+              <span class="slider__ctrl">
+                <output class="slider__out" id="outLight" for="rangeLight">50%</output>
+                <span class="stepper" role="group" aria-label="明度微调">
+                  <button class="stepper__btn" type="button" data-axis="l" data-dir="-1" aria-label="明度减 1">−</button>
+                  <button class="stepper__btn" type="button" data-axis="l" data-dir="1" aria-label="明度加 1">+</button>
+                </span>
+              </span>
             </div>
             <input class="range range--light" type="range" id="rangeLight" min="0" max="100" step="1" value="50" />
             <div class="slider__scale"><span>0% 黑</span><span>50%</span><span>100% 白</span></div>
@@ -192,6 +214,6 @@
 
   <!-- ES 模块：src/js/ 下按职责拆分，main.js 是唯一入口；file:// 协议会被 CORS 拦，本地要看 http://
        版本号只加在入口上（src/js 内部的 import 不带），改了子模块请硬刷或 Disable cache -->
-  <script type="module" src="./src/js/main.js?v=12"></script>
+  <script type="module" src="./src/js/main.js?v=13"></script>
 </body>
 </html>

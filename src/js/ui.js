@@ -87,6 +87,16 @@ export function renderSliders() {
   el.rangeHue.setAttribute('aria-valuetext', `${state.guess.h} 度`);
   el.rangeSat.setAttribute('aria-valuetext', `${state.guess.s}%`);
   el.rangeLight.setAttribute('aria-valuetext', `${state.guess.l}%`);
+
+  // ± 到边界只弱化、不给原生 disabled：长按连发按到头上时按钮若被 disabled，
+  // 正在按着的那条 pointer 序列会被吞掉（抬起都收不到），计时器就卡在边界上停不下来；
+  // 口径与下面的 softDisable 一致（aria-disabled 保持可聚焦、不吃事件）
+  el.stepButtons.forEach((btn) => {
+    const max = CONFIG.AXES[btn.dataset.axis];
+    const value = state.guess[btn.dataset.axis];
+    const atEdge = Number(btn.dataset.dir) >= 0 ? value >= max : value <= 0;
+    btn.setAttribute('aria-disabled', String(atEdge));
+  });
 }
 
 /** 三个圆形猜测记录位：未用=虚线空心圆；已用=纯色；提交完就能 hover 回看数值 */
