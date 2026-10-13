@@ -6,16 +6,20 @@
   <meta name="color-scheme" content="light" />
   <meta name="description" content="颜色比色挑战：每题三次猜测机会，调节 HSL 滑块还原目标颜色，记录最近几题准确率并可分享。" />
   <title>颜色比色挑战 · 三次猜测</title>
-  <!-- ?v= 是手动版本号：改版后递增它，否则浏览器磁盘缓存会继续用旧 css/js。
-       六条 CSS 与入口 main.js 一起递增（共七处），漏一个就会出现新 JS 配旧 CSS 的半改版状态。
-       src/js/ 内部的 import 不带版本号，改子模块只能靠这个入口版本 + 硬刷兜底。
+  <!-- ?v= 是手动版本号：改版后一起递增，否则浏览器磁盘缓存会继续用旧 css/js。
+       v16 起改为「全图版本号」：六条 CSS + 入口 main.js + src/js 里每一条 import 边都带上同一个 ?v，
+       递增时全图一起换号。原因：只要有一条裸边（./x.js），回访浏览器就会命中该 URL 的旧缓存；
+       而要换掉被改文件的缓存，就得让引用它的那条边指向新 URL，可这又会改动引用方源码、
+       迫使引用方自身也重新拉取……层层回溯到根。全图同号后，浏览器对这批 ?v 的 URL 一无所知，
+       整张模块图强制重取，杜绝「改了叶子模块（qr.js/card.js/config.js 等）回访用户仍拿旧版」。
+       代价只是版本号一跳时全图重下一遍，一次性、可接受。
        顺序 = 拆分前 styles.css 的段落顺序：响应式必须排最后才能盖住前面的规则。 -->
-  <link rel="stylesheet" href="./src/css/tokens.css?v=13" />
-  <link rel="stylesheet" href="./src/css/shell.css?v=13" />
-  <link rel="stylesheet" href="./src/css/layout.css?v=13" />
-  <link rel="stylesheet" href="./src/css/game.css?v=13" />
-  <link rel="stylesheet" href="./src/css/history.css?v=13" />
-  <link rel="stylesheet" href="./src/css/responsive.css?v=13" />
+  <link rel="stylesheet" href="./src/css/tokens.css?v=16" />
+  <link rel="stylesheet" href="./src/css/shell.css?v=16" />
+  <link rel="stylesheet" href="./src/css/layout.css?v=16" />
+  <link rel="stylesheet" href="./src/css/game.css?v=16" />
+  <link rel="stylesheet" href="./src/css/history.css?v=16" />
+  <link rel="stylesheet" href="./src/css/responsive.css?v=16" />
 </head>
 <body>
   <div class="page">
@@ -213,7 +217,7 @@
   </noscript>
 
   <!-- ES 模块：src/js/ 下按职责拆分，main.js 是唯一入口；file:// 协议会被 CORS 拦，本地要看 http://
-       版本号只加在入口上（src/js 内部的 import 不带），改了子模块请硬刷或 Disable cache -->
-  <script type="module" src="./src/js/main.js?v=13"></script>
+       v16 起全图版本号（见 <head> 注释）：入口与 src/js 里每条 import 边同号，改版时一起递增，勿只改入口 -->
+  <script type="module" src="./src/js/main.js?v=16"></script>
 </body>
 </html>

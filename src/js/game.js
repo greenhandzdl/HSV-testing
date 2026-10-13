@@ -1,17 +1,17 @@
 /**
  * 回合流转与分享动作：这里是唯一允许写 state 的地方（渲染层只读）。
  */
-import { CONFIG } from './config.js';
-import { clamp, num } from './utils.js';
-import { scoreOf, resolveFinal, generateTarget, ratingOf, historyRatingOf } from './rules.js';
-import * as HistoryStore from './history.js';
-import * as Share from './share.js';
-import { outputCard } from './card.js';
-import { renderCard, cardFileName, HISTORY_ROWS } from './card-round.js';
-import { renderHistoryCard, historyCardFileName, HISTORY_CARD_ROWS } from './card-history.js';
-import { state } from './state.js';
-import { el, toast } from './dom.js';
-import { renderGame, renderSwatches, renderSliders, renderShareLink, renderHistory } from './ui.js';
+import { CONFIG } from './config.js?v=16';
+import { clamp, num } from './utils.js?v=16';
+import { scoreOf, resolveFinal, generateTarget, ratingOf, historyRatingOf } from './rules.js?v=16';
+import * as HistoryStore from './history.js?v=16';
+import * as Share from './share.js?v=16';
+import { outputCard } from './card.js?v=16';
+import { renderCard, cardFileName } from './card-round.js?v=16';
+import { renderHistoryCard, historyCardFileName, HISTORY_CARD_ROWS } from './card-history.js?v=16';
+import { state } from './state.js?v=16';
+import { el, toast } from './dom.js?v=16';
+import { renderGame, renderSwatches, renderSliders, renderShareLink, renderHistory } from './ui.js?v=16';
 
 export function newRound() {
   state.target = generateTarget(state.difficulty);
@@ -234,7 +234,7 @@ async function deliverCard(render, { name }) {
 }
 
 /**
- * 生成分享卡片：本题成绩 + 最近几题 + 二维码。
+ * 生成分享卡片：本题成绩（目标色 vs 最佳 + 三次猜测）+ 二维码。一批题的历史交给历史卡，本题卡不重复挂。
  * 目标色没揭晓（没勾选揭晓且没结算）时，卡片不画目标色、二维码也不带目标色，
  * 与页面上的防作弊口径保持一致（见 ui.js 的 renderSwatches）。
  */
@@ -252,8 +252,6 @@ export function shareCard() {
   const totals = round.attempts.map((a) => a.score.total);
   const bestIndex = round.bestIndex >= 0 ? round.bestIndex : totals.indexOf(Math.max(...totals));
   const revealed = state.revealTarget || state.finalized;
-  const entries = HistoryStore.list(state.scope, state.difficulty);
-  const stats = HistoryStore.computeStats(entries, state.recentCount);
   return deliverCard(
     () =>
       renderCard({
@@ -266,8 +264,6 @@ export function shareCard() {
         bestIndex,
         attempts: round.attempts,
         revealed,
-        stats,
-        history: entries.slice(0, HISTORY_ROWS),
         url: revealed ? Share.cardUrl(round) : Share.siteUrl(),
       }),
     { name: cardFileName(round.final) }

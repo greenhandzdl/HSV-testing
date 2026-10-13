@@ -61,35 +61,42 @@ const ISO = {
     null,
     [19, 7, 1], [34, 10, 1], [55, 15, 1], [80, 20, 1], [108, 26, 1],
     [136, 18, 2], [156, 20, 2], [194, 24, 2], [232, 30, 2], [274, 18, 4],
+    [324, 20, 4], [370, 24, 4], [428, 26, 4], [461, 30, 4], [523, 22, 6],
+    [589, 24, 6], [647, 28, 6], [721, 30, 6],
   ],
   M: [
     null,
     [16, 10, 1], [28, 16, 1], [44, 26, 1], [64, 18, 2], [86, 24, 2],
     [108, 16, 4], [124, 18, 4], [154, 22, 4], [182, 22, 5], [216, 26, 5],
+    [254, 30, 5], [290, 22, 8], [334, 22, 9], [365, 24, 9], [415, 24, 10],
+    [453, 28, 10], [507, 28, 11], [563, 26, 13],
   ],
 };
 
 /** ISO 表 9 的 Byte 模式容量（公开值），也是 qr.js 的分块表算得对不对的唯一裁判 */
 const BYTE_CAPACITY = {
-  L: [null, 17, 32, 53, 78, 106, 134, 154, 192, 230, 271],
-  M: [null, 14, 26, 42, 62, 84, 106, 122, 152, 180, 213],
+  L: [null, 17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321, 367, 425, 458, 520, 586, 644, 718],
+  M: [null, 14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251, 287, 331, 362, 412, 450, 504, 560],
 };
 
 /** ISO 表 D.1 的校正图形中心坐标 */
 const ALIGN = [
   [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34],
   [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50],
+  [6, 30, 54], [6, 32, 58], [6, 34, 62], [6, 26, 46, 66], [6, 26, 48, 70],
+  [6, 26, 50, 74], [6, 30, 54, 78], [6, 30, 56, 82],
 ];
 
+const MAX_V = 18;
 for (const level of ['L', 'M']) {
-  for (let v = 1; v <= 10; v += 1) {
+  for (let v = 1; v <= MAX_V; v += 1) {
     const [c, e, b] = ISO[level][v];
     check(`v${v}-${level} 数据码字数与 ISO 一致`, dataCodewords(v, level) === c, `qr.js=${dataCodewords(v, level)} ISO=${c}`);
     check(`v${v}-${level} Byte 容量与 ISO 一致`, capacityBytes(v, level) === BYTE_CAPACITY[level][v], `qr.js=${capacityBytes(v, level)} ISO=${BYTE_CAPACITY[level][v]}`);
     check(`v${v}-${level} 分块自洽（⌊c/b⌋ 与余数）`, c % b <= b && c === b * Math.floor(c / b) + (c % b));
   }
 }
-for (let v = 1; v <= 10; v += 1) {
+for (let v = 1; v <= MAX_V; v += 1) {
   const got = alignmentPositions(v).join(',');
   const want = ALIGN[v - 1].join(',');
   check(`v${v} 校正图形坐标`, got === want, `qr.js=[${got}] ISO=[${want}]`);
@@ -322,6 +329,9 @@ const samples = [
   ['x'.repeat(154), { ecLevel: 'L' }], // v7-L 满容量，含版本信息
   ['y'.repeat(271), { ecLevel: 'L' }], // v10-L 满容量，16 位长度
   ['z'.repeat(213), { ecLevel: 'M' }], // v10-M 满容量
+  ['w'.repeat(450), { ecLevel: 'M' }], // v16-M 满容量（历史卡三题带色的量级）
+  ['v'.repeat(560), { ecLevel: 'M' }], // v18-M 满容量（本实现的版本上界）
+  ['u'.repeat(718), { ecLevel: 'L' }], // v18-L 满容量
   ['比色挑战·第 7 次猜测', { ecLevel: 'M' }], // 中文 UTF-8
   ['HSV 挑战 https://user.github.io/HSV-testing/?share=result&h=213&s=57&l=68&d=hard&g=3,5,8', { ecLevel: 'L' }],
 ];
@@ -329,9 +339,13 @@ for (const [text, options] of samples) verify(text, options);
 
 console.log('— 边界 —');
 check('v1-L 装 17 字节选 v1', encode('a'.repeat(17), { ecLevel: 'L' }).version === 1);
+check('272 字节现在落在 v11-L（旧版会报错）', encode('a'.repeat(272), { ecLevel: 'L' }).version === 11);
+check('v16-M 边界：450 选 v16、451 跳到 v17', (() => {
+  return encode('a'.repeat(450), { ecLevel: 'M' }).version === 16 && encode('a'.repeat(451), { ecLevel: 'M' }).version === 17;
+})());
 check('超容量抛 RangeError', (() => {
   try {
-    encode('a'.repeat(272), { ecLevel: 'L' });
+    encode('a'.repeat(561), { ecLevel: 'M' }); // 超 v18-M 的 560
     return false;
   } catch (err) {
     return err instanceof RangeError;

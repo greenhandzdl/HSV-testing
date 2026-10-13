@@ -1,6 +1,6 @@
 /**
  * 卡片工具箱：两张分享卡共用的画布原语、排版引擎、逐题条、页脚与出口。
- *   card-round.js   本题卡（目标色 vs 我的最佳 + 三次猜测 + 最近几题）
+ *   card-round.js   本题卡（目标色 vs 我的最佳 + 三次猜测）
  *   card-history.js 历史卡（均分为主角 + 逐题条铺满）
  * 本模块不画完整的卡，也不认识 state：数据一律由调用方（game.js）打包送进来，
  * 所以「卡片和页面显示不一致」这类问题只可能是传漏字段，而不是两处各自算一遍。
@@ -13,18 +13,21 @@
  *   - 逐题条画目标色：历史行都是已结算完成的题，本来就没有剧透谁一说，且面板里的
  *     历史行（ui.js historyDots）也带着目标色方块，卡片不跟它口径不一致。
  */
-import { CONFIG } from './config.js';
-import { hslCss } from './color.js';
-import { encode as encodeQr, get as qrGet } from './qr.js';
+import { CONFIG } from './config.js?v=16';
+import { hslCss } from './color.js?v=16';
+import { encode as encodeQr, get as qrGet } from './qr.js?v=16';
 
-const { width: W, height: H, margin: M, qrSize: QR } = CONFIG.CARD;
+const { width: W, height: H, margin: M, qrSize: QR, qrSizeHistory: QRH } = CONFIG.CARD;
 export const CW = W - M * 2;
-// 页脚（二维码）顶边由卡片高度反推
+// 页脚（二维码）顶边由卡片高度反推。本题卡用 QR（340），历史卡用放大后的 QRH。
 export const FOOT_TOP = H - M - QR;
 export const CONTENT_BOTTOM = FOOT_TOP - 24;
-export { W, H, M, QR };
+export { W, H, M, QR, QRH };
 // 内容区可用高度：所有 stretch 表的预算上限都从这里来
 export const AVAIL = CONTENT_BOTTOM - M;
+// 历史卡专用：页脚二维码放大后顶边上抬，正文可用高相应收缩（card-history.js 按此重算行数）
+export const CONTENT_BOTTOM_H = H - M - QRH - 24;
+export const AVAIL_H = CONTENT_BOTTOM_H - M;
 
 export const INK = '#171a20';
 export const SOFT = '#454b54';
@@ -139,16 +142,17 @@ export function drawTitle(ctx, right) {
  * @param {number} rowsMax 行数上限
  * @param {number} wantRows 想画的行数（超过上限会被截断）
  * @param {number} fixed 不参与拉伸的固定高度之和
+ * @param {number} avail 内容区可用高（默认本题卡的 AVAIL；历史卡放大页脚后传 AVAIL_H）
  */
-export function distribute(table, rowsMax, wantRows, fixed) {
+export function distribute(table, rowsMax, wantRows, fixed, avail = AVAIL) {
   const span = (k, rows) => (k === 'rowH' ? rows : table[k].span || 1);
   const sum = (key, rows) => Object.keys(table).reduce((s, k) => s + table[k][key] * span(k, rows), 0);
   let rows = Math.max(0, Math.min(wantRows, rowsMax));
-  while (rows > 0 && fixed + sum('min', rows) > AVAIL) rows -= 1;
+  while (rows > 0 && fixed + sum('min', rows) > avail) rows -= 1;
 
   const size = {};
   Object.keys(table).forEach((k) => { size[k] = table[k].min; });
-  let left = AVAIL - fixed - sum('min', rows);
+  let left = avail - fixed - sum('min', rows);
   while (left > 0.5) {
     let cap = 0;
     Object.keys(table).forEach((k) => {
@@ -293,13 +297,14 @@ export function drawQr(ctx, url, x, y, box) {
  * 页脚：右下有界二维码，左列说明文字跟它等高居中（以前从页脚顶往下堆，二维码底边留一大截空白）。
  * 两张卡只有那两句话不同，所以抽出来共用；地址最多两行，超出用省略号收尾。
  */
-export function drawFooter(ctx, { url, title, note }) {
-  drawQr(ctx, url, W - M - QR, FOOT_TOP, QR);
-  const urlAll = wrap(ctx, url, CW - QR - 40, px(19));
+export function drawFooter(ctx, { url, title, note, box = QR }) {
+  const footTop = H - M - box;
+  drawQr(ctx, url, W - M - box, footTop, box);
+  const urlAll = wrap(ctx, url, CW - box - 40, px(19));
   const urlLines = urlAll.slice(0, 2);
   if (urlAll.length > urlLines.length) urlLines[urlLines.length - 1] += '…';
   const colH = 26 + 10 + 21 + 24 + urlLines.length * 19 + (urlLines.length - 1) * 8 + 22 + 18;
-  let fy = FOOT_TOP + (QR - colH) / 2;
+  let fy = footTop + (box - colH) / 2;
   drawText(ctx, title, M, fy, { size: 26, weight: 700, baseline: 'top' });
   fy += 36;
   drawText(ctx, note, M, fy, { size: 21, color: SOFT, baseline: 'top' });

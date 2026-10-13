@@ -3,9 +3,9 @@
  * 色相用环形距离（0-180），饱和度/明度用线性差值（0-100）；
  * total = 100 * (0.65*scoreH + 0.20*scoreS + 0.15*scoreL)。
  */
-import { CONFIG } from './config.js';
-import { clamp, round1, randInt, gaussian } from './utils.js';
-import { sanitizeColor } from './color.js';
+import { CONFIG } from './config.js?v=16';
+import { clamp, round1, randInt, gaussian } from './utils.js?v=16';
+import { sanitizeColor } from './color.js?v=16';
 
 export function hueDistance(h1, h2) {
   const diff = Math.abs(h1 - h2) % 360;

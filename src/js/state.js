@@ -2,8 +2,8 @@
  * 会话状态单例。模块作用域天然只有一份，谁 import 谁读写的都是同一个对象，
  * 所以不需要 setter / 事件——但也意味着任何模块都能改它，改动请集中在 game.js。
  */
-import { CONFIG } from './config.js';
-import { generateTarget } from './rules.js';
+import { CONFIG } from './config.js?v=16';
+import { generateTarget } from './rules.js?v=16';
 
 export const state = {
   difficulty: CONFIG.DIFFICULTY.default,

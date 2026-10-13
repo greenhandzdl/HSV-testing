@@ -2,8 +2,8 @@
  * 游戏区与历史面板的渲染。每个 render* 只读 state、只写 DOM，不回写 state——
  * 状态变更一律集中在 game.js，渲染层保持无副作用（除了往 DOM 上贴属性）。
  */
-import { CONFIG } from './config.js';
-import { esc, clamp, formatTime } from './utils.js';
+import { CONFIG } from './config.js?v=16';
+import { esc, clamp, formatTime } from './utils.js?v=16';
 import {
   hslCss,
   hslLabel,
@@ -12,12 +12,12 @@ import {
   tipPlain,
   tipAttr,
   tipAria,
-} from './color.js';
-import { meanSaturationFor, ratingFor } from './rules.js';
-import * as HistoryStore from './history.js';
-import { puzzleUrl } from './share.js';
-import { state } from './state.js';
-import { el } from './dom.js';
+} from './color.js?v=16';
+import { meanSaturationFor, ratingFor } from './rules.js?v=16';
+import * as HistoryStore from './history.js?v=16';
+import { puzzleUrl } from './share.js?v=16';
+import { state } from './state.js?v=16';
+import { el } from './dom.js?v=16';
 
 export function renderLevelRow() {
   const d = CONFIG.DIFFICULTY;

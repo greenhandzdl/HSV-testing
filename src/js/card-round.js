@@ -1,50 +1,47 @@
 /**
- * 本题卡：目标色 vs 我的最佳 + 三次猜测 + 最近几题 + 二维码。
- * 原语（色板、排版引擎、逐题条、页脚、出口）都在 card.js 工具箱里，
+ * 本题卡：这一题的得分 + 目标色 vs 我的最佳 + 三次猜测 + 二维码。
+ * 原语（色板、排版引擎、页脚、出口）都在 card.js 工具箱里，
  * 这个文件只管「这一张卡从上到下有哪些段、各段占多少像素」。
  *
- * 守则：目标色未揭晓（revealTarget 关着且没结算）时不给目标色的色值与色块；
- * 「最近几题」的行跟历史卡共用同一个行渲染器（目标色方块 + 三次猜测点），
- * 因为那些行都是已结算的题，画目标色不剧透任何人。
+ * 与历史卡的分工（刻意不重叠）：本题卡只讲「这一题」，一批题的均分/极值/逐题分布
+ * 全交给历史卡，所以这里不再挂「最近几题」——否则两张卡文案雷同、本题卡反而比历史卡还「历史」。
+ *
+ * 守则：目标色未揭晓（revealTarget 关着且没结算）时不给目标色的色值与色块。
  */
-import { CONFIG } from './config.js';
-import { hslCss, hslPlain, hsvOf, isLightColor } from './color.js';
+import { CONFIG } from './config.js?v=16';
+import { hslCss, hslPlain, hsvOf, isLightColor } from './color.js?v=16';
 import {
   W, H, M, CW,
   SOFT, FAINT, LINE, SURFACE, ACCENT, STAGE, INK,
   RATING_LINE, DIGIT_INK,
   px, scoreColor, roundRect, drawText, wrap, inkAscent,
-  drawTopBand, drawTitle, distribute, rowScale, rowBarLayout, drawHistoryRow, drawFooter,
-} from './card.js';
-
-/** 历史最多画几条：game.js 取数据时共用这个数，免得两边各写一个 5 */
-export const HISTORY_ROWS = 5;
+  drawTopBand, drawTitle, distribute, drawFooter,
+} from './card.js?v=16';
 
 // 不参与拉伸的固定量：标题 34 + 标题到分隔线 22 + 分隔线 2 + 分数到评价行 14
 const FIXED_TOP = 34 + 22 + 2 + 14;
-// 「三次猜测」20 + 8 + 「第 N 次」19 + 6 + 得分 22 + 「最近 N 题」20
-const FIXED_BOTTOM = 20 + 8 + 19 + 6 + 22 + 20;
+// 「三次猜测」标题 20 + 8 + 「第 N 次」19 + 6 + 得分 22（本题卡到此为止，下面直接是页脚）
+const FIXED_BOTTOM = 20 + 8 + 19 + 6 + 22;
+// 去掉历史块后正文空出一大截，把色块 / 圆点 / 段距的 max 抬高，让 distribute 正好铺到 CONTENT_BOTTOM，
+// 不留底部死区（card.js 头注释里记着「塌一块」的教训）。
 const STRETCH = {
-  gapHead: { min: 23, max: 40, w: 1 }, // 分隔线 → 分数
-  scoreInk: { min: 76, max: 100, w: 1.4 },
-  gapScore: { min: 23, max: 40, w: 1 }, // 评价文案 → 两个色块
-  boxH: { min: 158, max: 208, w: 1.6 },
-  gapBoxes: { min: 16, max: 30, w: 0.8 }, // 色块 → 「三次猜测」
-  dotR: { min: 40, max: 54, w: 1.2, span: 2 }, // 占 2r，必须折回单值
-  gapDots: { min: 10, max: 18, w: 0.6 }, // 圆点 → 下方两行字
-  gapHist: { min: 21, max: 48, w: 1.2 }, // 猜测文字 → 「最近 N 题」
-  gapRows: { min: 10, max: 18, w: 0.5 }, // 「最近 N 题」→ 第一行
-  rowH: { min: 44, max: 56, w: 2 }, // 计 rows 倍
+  gapHead: { min: 23, max: 44, w: 1 }, // 分隔线 → 分数
+  scoreInk: { min: 76, max: 104, w: 1.4 },
+  gapScore: { min: 23, max: 56, w: 1 }, // 评价文案 → 两个色块
+  boxH: { min: 158, max: 268, w: 1.8 },
+  gapBoxes: { min: 16, max: 40, w: 0.8 }, // 色块 → 「三次猜测」
+  dotR: { min: 40, max: 78, w: 1.2, span: 2 }, // 占 2r，必须折回单值
+  gapDots: { min: 10, max: 26, w: 0.6 }, // 圆点 → 下方两行字
 };
 
-function layoutCard(wantRows, nLines) {
+function layoutCard(nLines) {
   const fixed = FIXED_TOP + nLines * RATING_LINE + FIXED_BOTTOM;
-  return distribute(STRETCH, HISTORY_ROWS, wantRows, fixed);
+  return distribute(STRETCH, 0, 0, fixed);
 }
 
 /**
  * @param {object} data { question, difficulty, final, rating, target, best, bestIndex,
- *                        attempts, revealed, stats, history, url }
+ *                        attempts, revealed, url }
  * @returns {HTMLCanvasElement}
  */
 export function renderCard(data) {
@@ -64,7 +61,7 @@ export function renderCard(data) {
   // 评价文案撑到分数下方整行铺开：以前挤在分数右边、按基线手调偏移，
   // 104px 的字顶因此直接压过上面的分隔线；整行铺开后既不再压线、也不用算折行宽度。
   const ratingLines = wrap(ctx, data.rating.line, CW, px(24)).slice(0, 2);
-  const L = layoutCard(data.history.length, ratingLines.length);
+  const L = layoutCard(ratingLines.length);
   y += L.gapHead;
   const scoreText = data.final.toFixed(1);
   const scoreSize = L.scoreInk / DIGIT_INK;
@@ -169,29 +166,8 @@ export function renderCard(data) {
       baseline: 'top',
     });
   }
-  y = guessTextTop + 19 + 6 + 22 + L.gapHist;
-
-  // —— 最近几题 ——
-  const stats = data.stats;
-  if (L.rows) {
-    // 只有 1 题时「最高」跟「均分」是同一个数，σ 也恒为 0——
-    // 写成「稳定度 ±0.0」会被读成“发挥极稳”，宁可不写
-    const parts = [`最近 ${stats.count} 题`, `均分 ${stats.avg.toFixed(1)}`];
-    if (stats.count > 1) parts.push(`最高 ${stats.max.toFixed(1)}`, `稳定度 ±${stats.std.toFixed(1)}`);
-    drawText(ctx, parts.join(' · '), M, y, { size: 20, weight: 700, color: FAINT, baseline: 'top' });
-  } else {
-    // 一条都没有时不再拼「最近 0 题 · 均分 0.0」这种自相矛盾的口径，换成一句说明
-    drawText(ctx, '这一题还没结算，暂时没有可展示的历史成绩', M, y, { size: 20, weight: 700, color: FAINT, baseline: 'top' });
-  }
-  y += 20 + L.gapRows;
-  const s = rowScale(L.rowH);
-  const { barX, barW } = rowBarLayout(ctx, data.history.slice(0, L.rows), s, data.question);
-  for (let i = 0; i < L.rows; i += 1) {
-    const entry = data.history[i];
-    // 刚玩完的这题也在「最近几题」里，标出来免得读者以为两个 56.9 是巧合
-    drawHistoryRow(ctx, entry, M, y + i * L.rowH + L.rowH / 2, barX, barW, s, entry.question === data.question);
-  }
-
+  // 本题卡到此为止：三次猜测之后直接是页脚，一批题的均分/极值/逐题分布全交给历史卡，
+  // 这里不再挂「最近几题」，否则两张卡文案雷同、本题卡反而比历史卡还「历史」。
   // 未揭晓时二维码只能指到首页（载荷里不带目标色），文案不能许一个做不到的承诺
   drawFooter(ctx, {
     url: data.url,

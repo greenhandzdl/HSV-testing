@@ -3,13 +3,13 @@
  * 载荷全部来自 URL，是不可信输入：一律过 num() / sanitizeColor() 再落 DOM，
  * 文本插进模板前统一 esc()。
  */
-import { CONFIG } from './config.js';
-import { esc, num, round1 } from './utils.js';
-import { sanitizeColor, hslCss, hslLabel, hslPlain, tipAttr, tipAria } from './color.js';
-import { ratingFor } from './rules.js';
-import { historyDots } from './ui.js';
-import { state } from './state.js';
-import { el } from './dom.js';
+import { CONFIG } from './config.js?v=16';
+import { esc, num, round1 } from './utils.js?v=16';
+import { sanitizeColor, hslCss, hslLabel, hslPlain, tipAttr, tipAria } from './color.js?v=16';
+import { ratingFor } from './rules.js?v=16';
+import { historyDots } from './ui.js?v=16';
+import { state } from './state.js?v=16';
+import { el } from './dom.js?v=16';
 
 /** 圆点图例：方形 = 目标色，圆形 = 各次猜测，双环 + ★ = 最佳一次 */
 const LEGEND_HTML =
@@ -44,13 +44,23 @@ export function renderShareView(kind, payload) {
 
 function renderSharedHistory(payload) {
   el.shareTitle.textContent = '最近成绩摘要（只读）';
-  const rounds = (Array.isArray(payload.rounds) ? payload.rounds : []).slice(0, CONFIG.SHARE.maxRounds);
+  // 逐题成绩有两种载荷形态：分享链接带完整 rounds（{q,d,f,c,g}），
+  // 卡片二维码为省字节把同一结构压成数组 r=[[题号,难度,得分,目标色c,三次猜测g]]（放大后可带色）。
+  // 这里把 r 归一化成 rounds 的同构对象，下游渲染一套逻辑即可（旧链接的 r 只有三元组、无 c/g，圆点自然为空）。
+  const rawRounds = Array.isArray(payload.rounds)
+    ? payload.rounds
+    : Array.isArray(payload.r)
+    ? payload.r.map((x) => ({ q: x && x[0], d: x && x[1], f: x && x[2], c: x && x[3], g: x && x[4] }))
+    : [];
+  const rounds = rawRounds.slice(0, CONFIG.SHARE.maxRounds);
+  // 圆点图例只在真有颜色数据时显示：完整分享链接用 rounds（含 c/g/b），
+  // 放大后的卡片二维码用带色 r（含 c/g）也要显示；只有摘要 / 旧版极简三元组时逐题行无圆点，图例收起。
+  const hasColors = rounds.some((r) => Array.isArray(r.c) || Array.isArray(r.g) || Array.isArray(r.b));
   // 摘要数字直接取载荷；缺失时按 rounds 兜底重算
   const finals = rounds.map((r) => num(r.f, 0, 100, 0));
   const n = num(payload.n, 0, 999, rounds.length);
-  // 历史卡二维码只带摘要数字、不带 rounds，所以「有没有数据」得同时看两边：
-  // 只看 rounds.length 会把载荷里明摆着的均分 / 极值 / σ 全画成 '—'，扫码等于白扫。
-  // （summary 载荷总是六个数一起写，只可能出现“全有”或“全无”，不会半截）
+  // 「有没有数据」得同时看 rounds 和 n：二维码预算紧时可能只塞得下摘要、
+  // 装不下逐题（r 为空），此时靠 n>0 仍能把均分 / 极值 / σ 画出来，不至于白扫。
   const hasData = rounds.length > 0 || n > 0;
   const avg = num(payload.avg, 0, 100, finals.length ? round1(finals.reduce((a, b) => a + b, 0) / finals.length) : 0);
   const max = num(payload.max, 0, 100, finals.length ? Math.max(...finals) : 0);
@@ -125,7 +135,7 @@ function renderSharedHistory(payload) {
       )}</span></div>
     </dl>
     <p class="meta-line">来源：${esc(scopeName)}</p>
-    ${LEGEND_HTML}
+    ${hasColors ? LEGEND_HTML : ''}
     ${items ? `<ol class="history">${items}</ol>` : '<p class="history-empty">链接只包含摘要数字，没有逐题记录。</p>'}
   `;
 }

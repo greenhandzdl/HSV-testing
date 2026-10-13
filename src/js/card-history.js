@@ -7,11 +7,11 @@
  */
 import { W, H, M,
   SURFACE, SOFT, FAINT,
-  RATING_LINE, DIGIT_INK, AVAIL, CONTENT_BOTTOM,
+  RATING_LINE, DIGIT_INK, AVAIL_H, CONTENT_BOTTOM_H,
   px, scoreColor, drawText, wrap, inkAscent,
   drawTopBand, drawTitle, distribute, rowScale, rowBarLayout, drawHistoryRow, drawFooter,
-} from './card.js';
-import { CONFIG } from './config.js';
+} from './card.js?v=16';
+import { CONFIG } from './config.js?v=16';
 
 /** 历史卡最多画几条：面板的「最近 N」档位是 5/8/10，这里按上限铺满（game.js 取数共用） */
 export const HISTORY_CARD_ROWS = 10;
@@ -38,7 +38,7 @@ function layoutTable(rows, fixed) {
   Object.keys(STRETCH).forEach((k) => { table[k] = { ...STRETCH[k] }; });
   table.scoreInk.max = rows >= 5 ? 100 : 150;
   const others = Object.keys(table).reduce((s, k) => (k === 'rowH' ? s : s + table[k].max), 0);
-  const perRow = Math.floor((AVAIL - fixed - others) / Math.max(rows, 1));
+  const perRow = Math.floor((AVAIL_H - fixed - others) / Math.max(rows, 1));
   table.rowH.max = Math.min(132, Math.max(56, perRow));
   return table;
 }
@@ -46,7 +46,7 @@ function layoutTable(rows, fixed) {
 function layoutCard(wantRows, nLines) {
   const fixed = FIXED_TOP + nLines * RATING_LINE + STATS_LINE;
   const rows = Math.max(0, Math.min(wantRows, HISTORY_CARD_ROWS));
-  return distribute(layoutTable(rows, fixed), HISTORY_CARD_ROWS, wantRows, fixed);
+  return distribute(layoutTable(rows, fixed), HISTORY_CARD_ROWS, wantRows, fixed, AVAIL_H);
 }
 
 /**
@@ -93,7 +93,7 @@ export function renderHistoryCard(data) {
   // 对半开是剩下唯一还读得通的处理：上下各留一半，读起来是版心而不是空页脚。
   const s = rowScale(L.rowH);
   const blockH = STATS_LINE + L.gapRows + L.rows * L.rowH;
-  const slack = CONTENT_BOTTOM - y - blockH;
+  const slack = CONTENT_BOTTOM_H - y - blockH;
   if (slack > 0) y += slack / 2;
 
   // 均分已经是主角，概览行只补极值与离散度（一题时两者没意义，不写）
@@ -107,7 +107,12 @@ export function renderHistoryCard(data) {
     drawHistoryRow(ctx, data.history[i], M, y + i * L.rowH + L.rowH / 2, barX, barW, s);
   }
 
-  drawFooter(ctx, { url: data.url, title: '扫码看这份成绩单', note: '只读，不写入你的本地记录' });
+  drawFooter(ctx, {
+    url: data.url,
+    title: '扫码看这份成绩单',
+    note: '只读，不写入你的本地记录',
+    box: CONFIG.CARD.qrSizeHistory, // 历史卡二维码放大：页脚顶边上抬，上面已按 AVAIL_H 重算正文预算
+  });
 
   return canvas;
 }
