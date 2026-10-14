@@ -4,7 +4,7 @@
  * 浮层挂在 body 上用 position:fixed 定位，不会被 .history 的 overflow 滚动容器裁掉；
  * 用 document 委托监听，历史列表反复 innerHTML 重渲染也不需重新绑定。
  */
-import { clamp } from './utils.js?v=16';
+import { clamp } from './utils.js?v=17';
 
 const box = document.createElement('div');
 box.className = 'tip';

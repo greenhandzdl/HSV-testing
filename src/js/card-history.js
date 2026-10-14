@@ -10,8 +10,8 @@ import { W, H, M,
   RATING_LINE, DIGIT_INK, AVAIL_H, CONTENT_BOTTOM_H,
   px, scoreColor, drawText, wrap, inkAscent,
   drawTopBand, drawTitle, distribute, rowScale, rowBarLayout, drawHistoryRow, drawFooter,
-} from './card.js?v=16';
-import { CONFIG } from './config.js?v=16';
+} from './card.js?v=17';
+import { CONFIG } from './config.js?v=17';
 
 /** 历史卡最多画几条：面板的「最近 N」档位是 5/8/10，这里按上限铺满（game.js 取数共用） */
 export const HISTORY_CARD_ROWS = 10;

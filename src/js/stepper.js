@@ -9,7 +9,7 @@
  * 妙处是慢速按下再抬起（过了 0.4 秒才抬）也不会多走一格——连发先计了一格，
  * click 被作废，净结果仍是一格。
  */
-import { CONFIG } from './config.js?v=16';
+import { CONFIG } from './config.js?v=17';
 
 const { step, holdDelay, fastDelay, rampFrames } = CONFIG.STEPPER;
 // 每帧收窄多少：把 holdDelay 到 fastDelay 的差摊到 rampFrames 帧

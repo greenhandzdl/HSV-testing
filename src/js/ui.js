@@ -2,8 +2,8 @@
  * 游戏区与历史面板的渲染。每个 render* 只读 state、只写 DOM，不回写 state——
  * 状态变更一律集中在 game.js，渲染层保持无副作用（除了往 DOM 上贴属性）。
  */
-import { CONFIG } from './config.js?v=16';
-import { esc, clamp, formatTime } from './utils.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { esc, clamp, formatTime } from './utils.js?v=17';
 import {
   hslCss,
   hslLabel,
@@ -12,12 +12,12 @@ import {
   tipPlain,
   tipAttr,
   tipAria,
-} from './color.js?v=16';
-import { meanSaturationFor, ratingFor } from './rules.js?v=16';
-import * as HistoryStore from './history.js?v=16';
-import { puzzleUrl } from './share.js?v=16';
-import { state } from './state.js?v=16';
-import { el } from './dom.js?v=16';
+} from './color.js?v=17';
+import { satBandFor, lightBandFor, ratingFor } from './rules.js?v=17';
+import * as HistoryStore from './history.js?v=17';
+import { puzzleUrl } from './share.js?v=17';
+import { state } from './state.js?v=17';
+import { el } from './dom.js?v=17';
 
 export function renderLevelRow() {
   const d = CONFIG.DIFFICULTY;
@@ -36,8 +36,11 @@ export function renderLevelRow() {
     state.difficulty >= d.max ? `已是最高难度（${d.max}）` : `难度加一，当前 ${state.difficulty}，切到 ${state.difficulty + 1}`
   );
   el.difficultySelect.value = String(state.difficulty);
-  const meanS = Math.round(meanSaturationFor(state.difficulty));
-  el.levelHint.textContent = `本难度饱和度均值 ≈ ${meanS}%（难度越高越灰，越难辨认）`;
+  const sat = satBandFor(state.difficulty);
+  const light = lightBandFor(state.difficulty);
+  // 直接报两根轴各自的取值档：玩家能自己验证「换一档真的不重叠」
+  el.levelHint.textContent =
+    `本难度取值：饱和度 ${sat.lo}–${sat.hi}%、明度 ${light.lo}–${light.hi}%（难度越高越灰、明度越靠中间，越难辨认）`;
 }
 
 export function renderSwatches() {

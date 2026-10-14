@@ -13,9 +13,9 @@
  *   - 逐题条画目标色：历史行都是已结算完成的题，本来就没有剧透谁一说，且面板里的
  *     历史行（ui.js historyDots）也带着目标色方块，卡片不跟它口径不一致。
  */
-import { CONFIG } from './config.js?v=16';
-import { hslCss } from './color.js?v=16';
-import { encode as encodeQr, get as qrGet } from './qr.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { hslCss } from './color.js?v=17';
+import { encode as encodeQr, get as qrGet } from './qr.js?v=17';
 
 const { width: W, height: H, margin: M, qrSize: QR, qrSizeHistory: QRH } = CONFIG.CARD;
 export const CW = W - M * 2;

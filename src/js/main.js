@@ -2,21 +2,21 @@
  * 入口：事件绑定 + 启动。这里是唯一认识"所有模块"的地方，
  * 其余模块彼此不认识（只依赖 config / utils / color 这一类底层）。
  */
-import { CONFIG } from './config.js?v=16';
-import { num } from './utils.js?v=16';
-import { hslLabel } from './color.js?v=16';
-import { meanSaturationFor } from './rules.js?v=16';
-import * as HistoryStore from './history.js?v=16';
-import * as Share from './share.js?v=16';
-import { state } from './state.js?v=16';
-import { el, cacheDom, toast } from './dom.js?v=16';
-import { bind as bindTip } from './tip.js?v=16';
-import { bindSteppers } from './stepper.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { num } from './utils.js?v=17';
+import { hslLabel } from './color.js?v=17';
+import { satBandFor } from './rules.js?v=17';
+import * as HistoryStore from './history.js?v=17';
+import * as Share from './share.js?v=17';
+import { state } from './state.js?v=17';
+import { el, cacheDom, toast } from './dom.js?v=17';
+import { bind as bindTip } from './tip.js?v=17';
+import { bindSteppers } from './stepper.js?v=17';
 import {
   renderGame,
   renderSwatches,
   renderHistory,
-} from './ui.js?v=16';
+} from './ui.js?v=17';
 import {
   setDifficulty,
   adjustGuess,
@@ -29,8 +29,8 @@ import {
   shareCard,
   shareHistoryCard,
   clearHistory,
-} from './game.js?v=16';
-import { renderShareView } from './share-view.js?v=16';
+} from './game.js?v=17';
+import { renderShareView } from './share-view.js?v=17';
 
 /* ----------------------------------------------------------------------
  * 事件绑定
@@ -123,8 +123,10 @@ function buildOptions() {
   el.difficultySelect.innerHTML = '';
   for (let level = d.min; level <= d.max; level += 1) {
     const opt = document.createElement('option');
+    const sat = satBandFor(level);
     opt.value = String(level);
-    opt.textContent = `${level} 级（均值 S ≈ ${Math.round(meanSaturationFor(level))}%）`;
+    // 报区间而不是均值：分层后这一档的饱和度只会落在这一带，写均值反而遮住「不重叠」这个卖点
+    opt.textContent = `${level} 级（S ${sat.lo}–${sat.hi}%）`;
     el.difficultySelect.appendChild(opt);
   }
   el.recentCount.innerHTML = '';

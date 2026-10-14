@@ -3,13 +3,13 @@
  * 载荷全部来自 URL，是不可信输入：一律过 num() / sanitizeColor() 再落 DOM，
  * 文本插进模板前统一 esc()。
  */
-import { CONFIG } from './config.js?v=16';
-import { esc, num, round1 } from './utils.js?v=16';
-import { sanitizeColor, hslCss, hslLabel, hslPlain, tipAttr, tipAria } from './color.js?v=16';
-import { ratingFor } from './rules.js?v=16';
-import { historyDots } from './ui.js?v=16';
-import { state } from './state.js?v=16';
-import { el } from './dom.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { esc, num, round1 } from './utils.js?v=17';
+import { sanitizeColor, hslCss, hslLabel, hslPlain, tipAttr, tipAria } from './color.js?v=17';
+import { ratingFor } from './rules.js?v=17';
+import { historyDots } from './ui.js?v=17';
+import { state } from './state.js?v=17';
+import { el } from './dom.js?v=17';
 
 /** 圆点图例：方形 = 目标色，圆形 = 各次猜测，双环 + ★ = 最佳一次 */
 const LEGEND_HTML =

@@ -3,9 +3,9 @@
  * 色相用环形距离（0-180），饱和度/明度用线性差值（0-100）；
  * total = 100 * (0.65*scoreH + 0.20*scoreS + 0.15*scoreL)。
  */
-import { CONFIG } from './config.js?v=16';
-import { clamp, round1, randInt, gaussian } from './utils.js?v=16';
-import { sanitizeColor } from './color.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { clamp, round1, randInt } from './utils.js?v=17';
+import { sanitizeColor } from './color.js?v=17';
 
 export function hueDistance(h1, h2) {
   const diff = Math.abs(h1 - h2) % 360;
@@ -61,21 +61,39 @@ export function historyRatingOf(score) {
 
 export const ratingFor = (score) => ratingOf(score).label;
 
-/** 难度越高 -> 饱和度高斯均值越左移（整体更"灰"，越难辨认） */
-export function meanSaturationFor(difficulty) {
+/**
+ * 难度对应的饱和度取值档 [lo, hi]：把整条饱和度区间按难度等分，档间首尾相接但不重叠，
+ * 所以「难度高一定更灰」是区间上的保证，不再靠均值差去跟噪声赛跑。
+ */
+export function satBandFor(difficulty) {
   const d = CONFIG.DIFFICULTY;
-  return clamp(
-    d.meanSatBase - difficulty * d.meanSatPerLevel,
-    d.meanSatFloor,
-    d.meanSatCeil
-  );
+  const band = (d.satTop - d.satBottom) / (d.max - d.min + 1);
+  const hi = Math.round(d.satTop - (clamp(difficulty, d.min, d.max) - d.min) * band);
+  return { lo: Math.max(0, Math.round(hi - band)), hi };
 }
 
+/**
+ * 难度对应的明度取值档 [lo, hi]：难度越高越往 lightCenter 收，
+ * 因为中间调最难判读，而接近黑 / 白的极端一眼就能对上一大截。
+ */
+export function lightBandFor(difficulty) {
+  const d = CONFIG.DIFFICULTY;
+  const t = (clamp(difficulty, d.min, d.max) - d.min) / Math.max(1, d.max - d.min);
+  const half = d.lightSpreadMax - t * (d.lightSpreadMax - d.lightSpreadMin);
+  return {
+    lo: Math.round(clamp(d.lightCenter - half, d.lightFloor, d.lightCeil)),
+    hi: Math.round(clamp(d.lightCenter + half, d.lightFloor, d.lightCeil)),
+  };
+}
+
+/** 出题：色相全随机，饱和度与明度各按难度落在自己的档里（档间不重叠 -> 难度可分辨） */
 export function generateTarget(difficulty) {
   const d = CONFIG.DIFFICULTY;
+  const sat = satBandFor(difficulty);
+  const light = lightBandFor(difficulty);
   return sanitizeColor({
     h: randInt(d.hueMin, d.hueMax - 1),
-    s: clamp(Math.round(gaussian(meanSaturationFor(difficulty), d.satStd)), 0, 100),
-    l: randInt(d.lightMin, d.lightMax),
+    s: randInt(sat.lo, sat.hi),
+    l: randInt(light.lo, light.hi),
   });
 }

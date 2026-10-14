@@ -14,12 +14,12 @@
        整张模块图强制重取，杜绝「改了叶子模块（qr.js/card.js/config.js 等）回访用户仍拿旧版」。
        代价只是版本号一跳时全图重下一遍，一次性、可接受。
        顺序 = 拆分前 styles.css 的段落顺序：响应式必须排最后才能盖住前面的规则。 -->
-  <link rel="stylesheet" href="./src/css/tokens.css?v=16" />
-  <link rel="stylesheet" href="./src/css/shell.css?v=16" />
-  <link rel="stylesheet" href="./src/css/layout.css?v=16" />
-  <link rel="stylesheet" href="./src/css/game.css?v=16" />
-  <link rel="stylesheet" href="./src/css/history.css?v=16" />
-  <link rel="stylesheet" href="./src/css/responsive.css?v=16" />
+  <link rel="stylesheet" href="./src/css/tokens.css?v=17" />
+  <link rel="stylesheet" href="./src/css/shell.css?v=17" />
+  <link rel="stylesheet" href="./src/css/layout.css?v=17" />
+  <link rel="stylesheet" href="./src/css/game.css?v=17" />
+  <link rel="stylesheet" href="./src/css/history.css?v=17" />
+  <link rel="stylesheet" href="./src/css/responsive.css?v=17" />
 </head>
 <body>
   <div class="page">
@@ -218,6 +218,6 @@
 
   <!-- ES 模块：src/js/ 下按职责拆分，main.js 是唯一入口；file:// 协议会被 CORS 拦，本地要看 http://
        v16 起全图版本号（见 <head> 注释）：入口与 src/js 里每条 import 边同号，改版时一起递增，勿只改入口 -->
-  <script type="module" src="./src/js/main.js?v=16"></script>
+  <script type="module" src="./src/js/main.js?v=17"></script>
 </body>
 </html>

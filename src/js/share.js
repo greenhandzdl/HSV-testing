@@ -6,9 +6,9 @@
  *   卡片二维码专用短链： ?share=r&data=<瘦载荷>   （r/h 是 result/history 的别名，旧链接照旧可用）
  * 全部基于 location.origin + pathname 拼装，GitHub Pages 子路径同样可用。
  */
-import { CONFIG } from './config.js?v=16';
-import { num } from './utils.js?v=16';
-import { sanitizeColor } from './color.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { num } from './utils.js?v=17';
+import { sanitizeColor } from './color.js?v=17';
 
 function utf8ToBase64Url(text) {
   const bytes = new TextEncoder().encode(text);

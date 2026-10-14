@@ -2,7 +2,7 @@
  * 颜色模型层：站内一律 HSL 打底；HSV 只是展示用的换算结果，不参与出题与评分。
  * tip* 系列负责浮层文本，四种写法各有分工（见各函数注释），别混用。
  */
-import { clamp, esc } from './utils.js?v=16';
+import { clamp, esc } from './utils.js?v=17';
 
 /** 合法颜色对象：H/S/L 均为整数，越界即截断 */
 export function sanitizeColor(raw) {

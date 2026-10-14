@@ -8,9 +8,9 @@
  *
  * 未导出的 cached / available / normalize* 即模块私有，不需要再套 IIFE。
  */
-import { CONFIG } from './config.js?v=16';
-import { num, round1 } from './utils.js?v=16';
-import { sanitizeColor } from './color.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { num, round1 } from './utils.js?v=17';
+import { sanitizeColor } from './color.js?v=17';
 
 const blank = () => ({ version: 1, byDifficulty: {} });
 

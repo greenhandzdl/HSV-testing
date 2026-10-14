@@ -30,16 +30,24 @@ export const CONFIG = Object.freeze({
     min: 1,
     max: 10,
     default: 1,
-    // 饱和度均值随难度左移：meanS = clamp(85 - d * 6, 15, 85)
-    meanSatBase: 85,
-    meanSatPerLevel: 6,
-    meanSatFloor: 15,
-    meanSatCeil: 85,
-    satStd: 12, // 高斯分布标准差
+    // 出题区间按难度「分层」，而不是「均值 + 噪声」。上一版是 meanS = 85 - 6d 叠 σ=12 的
+    // 高斯：级差只有噪声的一半（相邻档 Cohen's d = 0.5），2 万次抽样实测 d1 vs d2 只有
+    // 35% 的概率「难题真的更灰」，前五档的 P10–P90 区间大面积重叠，玩家看到的就是
+    // 「几个难度随机出来饱和度都差不多」。分层牺牲一点单题的自然度（有轻微档位感），
+    // 换来「难度高一定更灰」是区间上的保证。
+    satTop: 95, // 难度 min 那档的上沿
+    satBottom: 12, // 难度 max 那档的下沿
+    // 明度也分层，但方向是「向中段收拢」：接近黑 / 白的极端一眼就能对上一大截，
+    // 中间调才难判读。难度 min 几乎沿用旧的 25–80 包络，难度 max 收到 ±9。
+    lightCenter: 52,
+    lightSpreadMax: 27, // 难度 min：52 ± 27 → 25–79
+    lightSpreadMin: 9, // 难度 max：52 ± 9 → 43–61
+    lightFloor: 8, // 绝对钳位：spread 配大了也不许压到纯黑纯白
+    lightCeil: 92,
+    // 色相不参与难度，0–359 全随机：它是评分里权重最高的一根轴（见 SCORE.weights.h），
+    // 收窄它等于直接砍掉可玩空间，难度信号交给饱和度与明度就够。
     hueMin: 0,
     hueMax: 360,
-    lightMin: 25, // 避免过黑
-    lightMax: 80, // 避免过白
   }),
 
   // 自动递增难度：考得好升级，考得差降级

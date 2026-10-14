@@ -1,17 +1,17 @@
 /**
  * 回合流转与分享动作：这里是唯一允许写 state 的地方（渲染层只读）。
  */
-import { CONFIG } from './config.js?v=16';
-import { clamp, num } from './utils.js?v=16';
-import { scoreOf, resolveFinal, generateTarget, ratingOf, historyRatingOf } from './rules.js?v=16';
-import * as HistoryStore from './history.js?v=16';
-import * as Share from './share.js?v=16';
-import { outputCard } from './card.js?v=16';
-import { renderCard, cardFileName } from './card-round.js?v=16';
-import { renderHistoryCard, historyCardFileName, HISTORY_CARD_ROWS } from './card-history.js?v=16';
-import { state } from './state.js?v=16';
-import { el, toast } from './dom.js?v=16';
-import { renderGame, renderSwatches, renderSliders, renderShareLink, renderHistory } from './ui.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { clamp, num } from './utils.js?v=17';
+import { scoreOf, resolveFinal, generateTarget, ratingOf, historyRatingOf } from './rules.js?v=17';
+import * as HistoryStore from './history.js?v=17';
+import * as Share from './share.js?v=17';
+import { outputCard } from './card.js?v=17';
+import { renderCard, cardFileName } from './card-round.js?v=17';
+import { renderHistoryCard, historyCardFileName, HISTORY_CARD_ROWS } from './card-history.js?v=17';
+import { state } from './state.js?v=17';
+import { el, toast } from './dom.js?v=17';
+import { renderGame, renderSwatches, renderSliders, renderShareLink, renderHistory } from './ui.js?v=17';
 
 export function newRound() {
   state.target = generateTarget(state.difficulty);

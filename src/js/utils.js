@@ -16,19 +16,6 @@ export function num(value, lo, hi, fallback) {
   return Number.isFinite(n) ? clamp(n, lo, hi) : fallback;
 }
 
-/**
- * Box-Muller 变换：两个均匀分布随机数 -> 一个标准正态分布随机数
- * u/v 取不到 0（log(0) = -Infinity），故循环重取
- */
-export function gaussian(mean, std) {
-  let u = 0;
-  let v = 0;
-  while (u === 0) u = Math.random();
-  while (v === 0) v = Math.random();
-  const standard = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  return mean + standard * std;
-}
-
 export function formatTime(ts) {
   const d = new Date(ts);
   if (Number.isNaN(d.getTime())) return '--';

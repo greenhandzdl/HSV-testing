@@ -8,15 +8,15 @@
  *
  * 守则：目标色未揭晓（revealTarget 关着且没结算）时不给目标色的色值与色块。
  */
-import { CONFIG } from './config.js?v=16';
-import { hslCss, hslPlain, hsvOf, isLightColor } from './color.js?v=16';
+import { CONFIG } from './config.js?v=17';
+import { hslCss, hslPlain, hsvOf, isLightColor } from './color.js?v=17';
 import {
   W, H, M, CW,
   SOFT, FAINT, LINE, SURFACE, ACCENT, STAGE, INK,
   RATING_LINE, DIGIT_INK,
   px, scoreColor, roundRect, drawText, wrap, inkAscent,
   drawTopBand, drawTitle, distribute, drawFooter,
-} from './card.js?v=16';
+} from './card.js?v=17';
 
 // 不参与拉伸的固定量：标题 34 + 标题到分隔线 22 + 分隔线 2 + 分数到评价行 14
 const FIXED_TOP = 34 + 22 + 2 + 14;
